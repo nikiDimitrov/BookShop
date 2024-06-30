@@ -1,27 +1,24 @@
 package org.book.bookshop.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-@Data
-@AllArgsConstructor
 @NoArgsConstructor
+@Data
 @Entity
 @Table(name = "receipts")
 public class Receipt {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @OneToOne
-    @JoinColumn(name = "order_id")
     private Order order;
 
     public Receipt(Order order){

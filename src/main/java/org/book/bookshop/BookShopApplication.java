@@ -8,17 +8,18 @@ import org.springframework.stereotype.Component;
 @SpringBootApplication
 public class BookShopApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(BookShopApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(BookShopApplication.class, args);
+    }
 
-	@Component
-	public static class ConsoleRunner implements CommandLineRunner {
+    @Component
+    public static class ConsoleRunner implements CommandLineRunner {
 
-		@Override
-		public void run(String... args) throws Exception {
-			System.out.println("Hello World!");
-		}
-	}
+        @Override
+        public void run(String... args) throws Exception {
+            System.out.println("Hello World!");
+            // to be implemented
+        }
+    }
 
 }

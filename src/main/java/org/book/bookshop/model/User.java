@@ -1,38 +1,27 @@
 package org.book.bookshop.model;
 
-
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import java.util.UUID;
 
 @NoArgsConstructor
+@AllArgsConstructor
 @Data
 @Entity
 @Table(name = "users")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
     private String username;
     private String email;
     private String password;
 
-    @OneToOne
-    @JoinColumn(name = "role_id")
+    @Enumerated(EnumType.STRING)
     private Role role;
 
-    public User(String username, String email, String password, Role role){
-        this.username = username;
-        this.email = email;
-        setPassword(password);
-        this.role = role;
-    }
-
-    public void setPassword(String password){
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
-        this.password = encoder.encode(password);
-    }
 }
