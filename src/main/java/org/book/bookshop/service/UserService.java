@@ -4,20 +4,23 @@ import lombok.RequiredArgsConstructor;
 import org.book.bookshop.model.User;
 import org.book.bookshop.repository.UserRepository;
 import org.book.bookshop.exceptions.IncorrectInputException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
+    @Autowired
     private final UserRepository userRepository;
+
     private BCryptPasswordEncoder encoder;
 
-    public User registerUser(User user) throws IllegalArgumentException {
+    public void registerUser (User user) throws IllegalArgumentException {
         if(userRepository.findByUsername(user.getUsername()).isPresent()
                 && userRepository.findByEmail(user.getEmail()).isPresent())
         {
@@ -25,7 +28,7 @@ public class UserService {
         }
         encoder = new BCryptPasswordEncoder(16);
         user.setPassword(encoder.encode(user.getPassword()));
-        return userRepository.save(user);
+        userRepository.save(user);
     }
 
     public User loginUser(String username, String password) throws IncorrectInputException {
