@@ -1,25 +1,17 @@
 package org.book.bookshop.controller;
 
-import org.book.bookshop.repository.UserRepository;
-import org.book.bookshop.service.UserService;
-import org.book.bookshop.view.UserView;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
+@RequiredArgsConstructor
 @Controller
 public class MainController {
-    @Autowired
-    private UserService userService;
 
     @Autowired
-    private UserController userController;
-
-    private UserView userView;
-
+    private final UserController userController;
 
     public void run() {
-        UserView userView = new UserView(userController);
-
-        userView.run();
+        userController.run();
     }
 }

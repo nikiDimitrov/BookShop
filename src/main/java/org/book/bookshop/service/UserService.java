@@ -2,10 +2,12 @@ package org.book.bookshop.service;
 
 import lombok.RequiredArgsConstructor;
 import org.book.bookshop.exceptions.UserNotFoundException;
+import org.book.bookshop.model.Role;
 import org.book.bookshop.model.User;
 import org.book.bookshop.repository.UserRepository;
 import org.book.bookshop.exceptions.IncorrectInputException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.transform.impl.AddDelegateTransformer;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,14 +23,24 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
 
-    public void registerUser (User user) throws IllegalArgumentException {
-        if(userRepository.findByUsername(user.getUsername()).isPresent()
-                || userRepository.findByEmail(user.getEmail()).isPresent())
+    public void registerUser (String username, String email, String password) throws IllegalArgumentException {
+        if(userRepository.findByUsername(username).isPresent()
+                || userRepository.findByEmail(email).isPresent())
         {
             throw new IllegalArgumentException("User with that username or email already exists!");
         }
 
-        user.setPassword(encoder.encode(user.getPassword()));
+        String encodedPassword = encoder.encode(password);
+
+        User user = new User(username, email, encodedPassword);
+
+        if(userRepository.findAll().isEmpty()) {
+            user.setRole(Role.ADMIN);
+        }
+        else {
+            user.setRole(Role.CLIENT);
+        }
+
         userRepository.save(user);
     }
 

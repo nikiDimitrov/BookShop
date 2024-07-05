@@ -17,46 +17,26 @@ import java.util.Scanner;
 public class UserView {
 
     @Autowired
-    private final UserController userController;
+    private final Scanner scanner;
 
-    private User currentUser;
-
-    private Scanner scanner = new Scanner(System.in);
-
-    public void run() {
-        this.generalPrompt();
-        String input = scanner.nextLine();
-        if(input.equalsIgnoreCase("login")) {
-            loginPrompts();
-
-        }
-        if(input.equalsIgnoreCase("register")) {
-            registerPrompts();;
-        }
-    }
-
-    public void generalPrompt() {
+    public String generalPrompt() {
         System.out.println("Hello! Would you like to login or register?");
+
+        return scanner.nextLine();
     }
 
-    public void loginPrompts() {
+    public String[] loginPrompts() {
         System.out.println("Username: ");
         String username = scanner.nextLine();
 
         System.out.println("Password: ");
         String password = scanner.nextLine();
 
-        try {
-            currentUser = userController.loginUser(username, password);
-            displayLoginSuccess();
-        }
-        catch (IncorrectInputException | UserNotFoundException e) {
-            displayError(e.getMessage());
-        }
-
+        return new String[] {username, password};
 
     }
-    public void registerPrompts() {
+
+    public String[] registerPrompts() {
         System.out.println("Username: ");
         String username = scanner.nextLine();
 
@@ -66,14 +46,7 @@ public class UserView {
         System.out.println("Password: ");
         String password = scanner.nextLine();
 
-        try {
-            userController.insertUser(username, email, password);
-            displayRegistrationSuccess();
-        }
-        catch(IllegalArgumentException e){
-            displayError(e.getMessage());
-        }
-
+        return new String[] {username, email, password};
     }
 
     public void displayError(String errorMessage) {
