@@ -1,10 +1,12 @@
 package org.book.bookshop.service;
 
 import lombok.RequiredArgsConstructor;
+import org.book.bookshop.exceptions.UserNotFoundException;
 import org.book.bookshop.model.User;
 import org.book.bookshop.repository.UserRepository;
 import org.book.bookshop.exceptions.IncorrectInputException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,17 +23,22 @@ public class UserService {
 
     public void registerUser (User user) throws IllegalArgumentException {
         if(userRepository.findByUsername(user.getUsername()).isPresent()
-                && userRepository.findByEmail(user.getEmail()).isPresent())
+                || userRepository.findByEmail(user.getEmail()).isPresent())
         {
-            throw new IllegalArgumentException("User already exists!");
+            throw new IllegalArgumentException("User with that username or email already exists!");
         }
 
         user.setPassword(encoder.encode(user.getPassword()));
         userRepository.save(user);
     }
 
-    public User loginUser(String username, String password) throws IncorrectInputException {
+    public User loginUser(String username, String password) throws UsernameNotFoundException, IncorrectInputException {
         User user = loadUserByUsername(username);
+
+        if(user == null) {
+            throw new UserNotFoundException(String.format("User with username %s not found!", username));
+        }
+
         if(!encoder.matches(password, user.getPassword())){
             throw new IncorrectInputException(String.format("Password for %s is wrong!", username));
         }

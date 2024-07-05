@@ -1,5 +1,7 @@
 package org.book.bookshop.controller;
 import lombok.RequiredArgsConstructor;
+import org.book.bookshop.exceptions.IncorrectInputException;
+import org.book.bookshop.exceptions.UserNotFoundException;
 import org.book.bookshop.model.Role;
 import org.book.bookshop.model.User;
 import org.book.bookshop.service.UserService;
@@ -27,5 +29,9 @@ public class UserController {
             user.setRole(Role.CLIENT);
         }
         service.registerUser(user);
+    }
+
+    public User loginUser(String username, String password) throws IncorrectInputException, UserNotFoundException {
+        return service.loginUser(username, password);
     }
 }
