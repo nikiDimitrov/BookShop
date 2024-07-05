@@ -17,8 +17,7 @@ public class UserService {
 
     @Autowired
     private final UserRepository userRepository;
-
-    private BCryptPasswordEncoder encoder;
+    private final BCryptPasswordEncoder encoder;
 
     public void registerUser (User user) throws IllegalArgumentException {
         if(userRepository.findByUsername(user.getUsername()).isPresent()
@@ -26,7 +25,7 @@ public class UserService {
         {
             throw new IllegalArgumentException("User already exists!");
         }
-        encoder = new BCryptPasswordEncoder(16);
+
         user.setPassword(encoder.encode(user.getPassword()));
         userRepository.save(user);
     }
