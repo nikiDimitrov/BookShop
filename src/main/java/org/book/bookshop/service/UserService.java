@@ -7,7 +7,6 @@ import org.book.bookshop.model.User;
 import org.book.bookshop.repository.UserRepository;
 import org.book.bookshop.exceptions.IncorrectInputException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.transform.impl.AddDelegateTransformer;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,7 +22,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
 
-    public void registerUser (String username, String email, String password) throws IllegalArgumentException {
+    public User registerUser(String username, String email, String password, Role role) throws IllegalArgumentException {
         if(userRepository.findByUsername(username).isPresent()
                 || userRepository.findByEmail(email).isPresent())
         {
@@ -38,10 +37,10 @@ public class UserService {
             user.setRole(Role.ADMIN);
         }
         else {
-            user.setRole(Role.CLIENT);
+            user.setRole(role);
         }
 
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 
     public User loginUser(String username, String password) throws UsernameNotFoundException, IncorrectInputException {

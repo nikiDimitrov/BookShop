@@ -1,20 +1,14 @@
-package org.book.bookshop.view;
+package org.book.bookshop.view.user;
 
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.book.bookshop.controller.UserController;
-import org.book.bookshop.exceptions.IncorrectInputException;
-import org.book.bookshop.exceptions.UserNotFoundException;
-import org.book.bookshop.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Scanner;
 
-@Data
 @Component
 @RequiredArgsConstructor
-public class UserView {
+public class LoginView {
 
     @Autowired
     private final Scanner scanner;

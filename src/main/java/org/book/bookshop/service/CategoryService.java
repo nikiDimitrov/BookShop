@@ -13,7 +13,7 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
 
     public Category getCategoryByName(String name) {
-        Optional<Category> category = categoryRepository.getCategoryByName(name);
+        Optional<Category> category = categoryRepository.findCategoryByName(name);
         return category.stream().findFirst().orElse(null);
     }
 

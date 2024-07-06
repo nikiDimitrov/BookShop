@@ -1,27 +1,25 @@
-package org.book.bookshop.controller;
+package org.book.bookshop.controller.user;
 import lombok.RequiredArgsConstructor;
 import org.book.bookshop.exceptions.IncorrectInputException;
 import org.book.bookshop.exceptions.UserNotFoundException;
 import org.book.bookshop.model.Role;
 import org.book.bookshop.model.User;
 import org.book.bookshop.service.UserService;
-import org.book.bookshop.view.UserView;
+import org.book.bookshop.view.user.LoginView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
-import java.util.List;
-
 @Controller
 @RequiredArgsConstructor
-public class UserController {
+public class LoginController {
 
     @Autowired
     private final UserService service;
-    private final UserView view;
+    private final LoginView view;
 
     private User currentUser;
 
-    public void run() {
+    public User run() {
         String input = view.generalPrompt();
 
         if(input.equalsIgnoreCase("login")) {
@@ -31,6 +29,8 @@ public class UserController {
         if(input.equalsIgnoreCase("register")) {
             registerUser();
         }
+
+        return currentUser;
     }
 
     public void registerUser() {
@@ -41,7 +41,7 @@ public class UserController {
         String password = registerDetails[2];
 
         try {
-            service.registerUser(username, email, password);
+            currentUser = service.registerUser(username, email, password, Role.CLIENT);
             view.displayRegistrationSuccess();
         }
         catch (IllegalArgumentException e) {
