@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
 import org.book.bookshop.model.Role;
+import org.book.bookshop.model.User;
 import org.book.bookshop.service.BookService;
 import org.book.bookshop.service.CategoryService;
 import org.book.bookshop.service.UserService;
@@ -17,7 +18,7 @@ import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
-public class AdminController {
+public class AdminController extends UserController {
 
     @Autowired
     private final UserService service;
@@ -26,14 +27,13 @@ public class AdminController {
     private final CategoryService categoryService;
     private final BookService bookService;
 
-
-    public void run(int input) {
-
+    @Override
+    public int run() {
+        int input = Integer.parseInt(view.adminOptions());
         switch(input) {
             case 1 -> registerEmployee();
             case 2 -> {
                 List<Category> categories = categoryService.getAllCategories();
-
                 if(categories.isEmpty()) {
                     view.displayNoCategoryError();
                 } else {
@@ -41,6 +41,8 @@ public class AdminController {
                 }
             }
         }
+
+        return input;
     }
 
     public void registerEmployee() {

@@ -10,10 +10,20 @@ import java.util.Scanner;
 
 @Component
 @RequiredArgsConstructor
-public class AdminView {
+public class AdminView extends UserView {
 
     @Autowired
     private final Scanner scanner;
+
+    public String adminOptions() {
+        System.out.println("1. Add an employee");
+        System.out.println("2. Add a book");
+        System.out.println("3. Remove a book");
+        System.out.println("4. Add category/categories");
+        System.out.println("0. Exit");
+
+        return scanner.nextLine();
+    }
 
     public String[] addEmployee() {
         System.out.println("Username: ");
