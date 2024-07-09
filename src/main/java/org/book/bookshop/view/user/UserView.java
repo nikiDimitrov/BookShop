@@ -14,7 +14,7 @@ public abstract class UserView {
     }
 
     public void onExit(User user) {
-        System.out.printf("Goodbye, %s! Exiting...", user.getUsername());
+        System.out.printf("Goodbye, %s! Exiting...\n", user.getUsername());
     }
 
 }

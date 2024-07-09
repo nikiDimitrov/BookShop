@@ -3,6 +3,7 @@ package org.book.bookshop.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import java.util.UUID;
 
@@ -18,4 +19,7 @@ public class Category {
 
     private String name;
 
+    public Category(String name) {
+        this.name = name;
+    }
 }

@@ -13,12 +13,12 @@ import org.springframework.stereotype.Component;
 public class UserControllerFactory {
 
     @Autowired
-    private AdminController adminController;
+    private final AdminController adminController;
 
     //@Autowired
     //private EmployeeController employeeController;
 
-    // @Autowired
+    //@Autowired
     //private ClientController clientController;
 
     public UserController getController(User user) {

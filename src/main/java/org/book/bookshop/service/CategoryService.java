@@ -18,8 +18,8 @@ public class CategoryService {
         return category.stream().findFirst().orElse(null);
     }
 
-    public Category saveCategory(Category category) {
-        return categoryRepository.save(category);
+    public Category saveCategory(String categoryName) {
+        return categoryRepository.save(new Category(categoryName));
     }
 
     public List<Category> getAllCategories() {
