@@ -2,6 +2,7 @@ package org.book.bookshop.service;
 
 import lombok.RequiredArgsConstructor;
 import org.book.bookshop.model.Book;
+import org.book.bookshop.model.Category;
 import org.book.bookshop.repository.BookRepository;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +29,9 @@ public class BookService {
         return bookRepository.findBooksByYear(year);
     }
 
-    public Book saveBook(Book book) {
+    public Book saveBook(String name, String author, double price, List<Category> categories, int year) {
+        Book book = new Book(name, author, price, categories, year);
+
         return bookRepository.save(book);
     }
 

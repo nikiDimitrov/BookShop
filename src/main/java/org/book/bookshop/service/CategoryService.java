@@ -5,6 +5,7 @@ import org.book.bookshop.model.Category;
 import org.book.bookshop.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -19,5 +20,9 @@ public class CategoryService {
 
     public Category saveCategory(Category category) {
         return categoryRepository.save(category);
+    }
+
+    public List<Category> getAllCategories() {
+        return categoryRepository.findAll();
     }
 }

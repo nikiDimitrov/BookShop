@@ -1,6 +1,7 @@
 package org.book.bookshop.service;
 
 import lombok.RequiredArgsConstructor;
+import org.book.bookshop.exceptions.NoUsersException;
 import org.book.bookshop.exceptions.UserNotFoundException;
 import org.book.bookshop.model.Role;
 import org.book.bookshop.model.User;
@@ -43,7 +44,10 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User loginUser(String username, String password) throws UsernameNotFoundException, IncorrectInputException {
+    public User loginUser(String username, String password) throws UsernameNotFoundException, NoUsersException, IncorrectInputException {
+        if(userRepository.findAll().isEmpty()) {
+            throw new NoUsersException("No users found! Can't log in!");
+        }
         User user = loadUserByUsername(username);
 
         if(user == null) {

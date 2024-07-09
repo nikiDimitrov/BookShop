@@ -1,16 +1,12 @@
 package org.book.bookshop.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-@AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Entity
@@ -30,6 +26,11 @@ public class Book {
 
     private int year;
 
-    @CreatedDate
-    private LocalDateTime dateAdded;
+    public Book(String name, String author, double price, List<Category> categories, int year) {
+        this.name = name;
+        this.author = author;
+        this.price = price;
+        this.categories = categories;
+        this.year = year;
+    }
 }

@@ -1,6 +1,7 @@
 package org.book.bookshop.controller.user;
 import lombok.RequiredArgsConstructor;
 import org.book.bookshop.exceptions.IncorrectInputException;
+import org.book.bookshop.exceptions.NoUsersException;
 import org.book.bookshop.exceptions.UserNotFoundException;
 import org.book.bookshop.model.Role;
 import org.book.bookshop.model.User;
@@ -59,7 +60,8 @@ public class LoginController {
             currentUser = service.loginUser(username, password);
             view.displayLoginSuccess();
         }
-        catch (IncorrectInputException | UserNotFoundException e) {
+        catch (IncorrectInputException | UserNotFoundException
+                | NoUsersException e) {
             view.displayError(e.getMessage());
         }
     }
