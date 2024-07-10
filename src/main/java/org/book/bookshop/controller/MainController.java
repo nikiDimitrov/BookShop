@@ -9,6 +9,8 @@ import org.book.bookshop.view.user.UserView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
+import java.io.IOException;
+
 @RequiredArgsConstructor
 @Controller
 public class MainController {
@@ -18,7 +20,7 @@ public class MainController {
     private final UserControllerFactory userControllerFactory;
     private final UserView userView;
 
-    public void run() {
+    public void run() throws IOException {
         User user = loginController.run();
         UserController controller = userControllerFactory.getController(user);
         userView.intro(user);
@@ -26,6 +28,7 @@ public class MainController {
         int input = controller.run();
 
         while(input != 0) {
+            userView.awaitEnter();
             input = controller.run();
         }
         userView.onExit(user);

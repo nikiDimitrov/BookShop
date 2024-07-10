@@ -1,6 +1,7 @@
 package org.book.bookshop.service;
 
 import lombok.RequiredArgsConstructor;
+import org.book.bookshop.exceptions.NoCategoriesException;
 import org.book.bookshop.model.Category;
 import org.book.bookshop.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,13 @@ public class CategoryService {
         return categoryRepository.save(new Category(categoryName));
     }
 
-    public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+    public List<Category> getAllCategories() throws NoCategoriesException {
+        List<Category> categories =  categoryRepository.findAll();
+
+        if(categories.isEmpty()) {
+            throw new NoCategoriesException("No categories!");
+        }
+
+        return categories;
     }
 }

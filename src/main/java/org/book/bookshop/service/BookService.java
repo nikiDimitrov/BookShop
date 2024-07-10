@@ -1,6 +1,7 @@
 package org.book.bookshop.service;
 
 import lombok.RequiredArgsConstructor;
+import org.book.bookshop.exceptions.NoBooksException;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
 import org.book.bookshop.repository.BookRepository;
@@ -13,7 +14,13 @@ import java.util.List;
 public class BookService {
     private final BookRepository bookRepository;
 
-    public List<Book> findAllBooks() {
+    public List<Book> findAllBooks() throws NoBooksException {
+        List<Book> books = bookRepository.findAll();
+
+        if(books.isEmpty()) {
+            throw new NoBooksException("No books found!");
+        }
+
         return bookRepository.findAll();
     }
 

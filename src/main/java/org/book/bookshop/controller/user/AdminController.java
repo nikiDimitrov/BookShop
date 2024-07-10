@@ -1,9 +1,13 @@
 package org.book.bookshop.controller.user;
 
 import lombok.RequiredArgsConstructor;
+import org.book.bookshop.exceptions.NoBooksException;
+import org.book.bookshop.exceptions.NoCategoriesException;
+import org.book.bookshop.exceptions.UserNotFoundException;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
 import org.book.bookshop.model.Role;
+import org.book.bookshop.model.User;
 import org.book.bookshop.service.BookService;
 import org.book.bookshop.service.CategoryService;
 import org.book.bookshop.service.UserService;
@@ -26,6 +30,8 @@ public class AdminController extends UserController {
 
     private final AdminView view;
     private final LoginView loginView;
+    @Autowired
+    private UserService userService;
 
 
     @Override
@@ -33,22 +39,17 @@ public class AdminController extends UserController {
         int input = Integer.parseInt(view.adminOptions());
         switch(input) {
             case 1 -> registerEmployee();
-            case 2 -> {
-                List<Category> categories = categoryService.getAllCategories();
-                if(categories.isEmpty()) {
-                    view.displayNoCategoryError();
-                } else {
-                    addBook(categories);
-                }
-            }
-            case 4 -> addCategory();
+            case 2 -> showAllUsers();
+            case 3 -> addBook();
+            case 5 -> showAllBooks();
+            case 6 -> addCategory();
         }
 
         return input;
     }
 
     public void registerEmployee() {
-        String[] employeeDetails = view.addEmployee();
+        String[] employeeDetails = loginView.registerPrompts();
 
         String username = employeeDetails[0];
         String email = employeeDetails[1];
@@ -59,27 +60,65 @@ public class AdminController extends UserController {
             loginView.displayRegistrationSuccess();
         }
         catch (IllegalArgumentException e) {
-            loginView.displayError(e.getMessage());
+            view.displayError(e.getMessage());
         }
     }
 
-    public void addBook(List<Category> categories) {
-        String[] bookDetails = view.addBook(categories);
+    public void showAllUsers() {
+        List<User> users = new ArrayList<>();
 
-        String name = bookDetails[0];
-        String author = bookDetails[1];
-        double price = Double.parseDouble(bookDetails[2]);
-        List<Category> chosenCategories = getCategoriesByNames(bookDetails[3]);
-        int year = Integer.parseInt(bookDetails[4]);
-
-        Book book = bookService.saveBook(name, author, price, chosenCategories, year);
-
-        if(book == null) {
-            //needs to be refactored, temporary code
-            throw new RuntimeException("Book wasn't added successfully!");
+        try {
+           users = userService.findAllUsers();
         }
-        else {
-            view.displayBookSuccess();
+        catch(UserNotFoundException e) {
+            view.displayError(e.getMessage());
+        }
+        finally {
+            view.showAllUsers(users);
+        }
+    }
+
+    public void addBook() {
+        List<Category> categories = new ArrayList<>();
+
+        try {
+            categories = categoryService.getAllCategories();
+        }
+        catch (NoCategoriesException e) {
+            view.displayError(e.getMessage());
+        }
+        finally {
+            String[] bookDetails = view.addBook(categories);
+
+            String name = bookDetails[0];
+            String author = bookDetails[1];
+            double price = Double.parseDouble(bookDetails[2]);
+            List<Category> chosenCategories = getCategoriesByNames(bookDetails[3]);
+            int year = Integer.parseInt(bookDetails[4]);
+
+            Book book = bookService.saveBook(name, author, price, chosenCategories, year);
+
+            if(book == null) {
+                //needs to be refactored, temporary code
+                view.displayError("Book is not successfully added!");
+            }
+            else {
+                view.displayBookSuccess();
+            }
+        }
+    }
+
+    public void showAllBooks() {
+        List<Book> books = new ArrayList<>();
+
+        try {
+            books = bookService.findAllBooks();
+        }
+        catch(NoBooksException e){
+            view.displayError(e.getMessage());
+        }
+        finally {
+            view.showAllBooks(books);
         }
     }
 
@@ -98,6 +137,8 @@ public class AdminController extends UserController {
             }
         }
     }
+
+
     private List<Category> getCategoriesByNames(String categoriesString) {
         List<Category> categories = new ArrayList<>();
 

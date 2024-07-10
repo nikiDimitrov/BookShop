@@ -1,8 +1,9 @@
 package org.book.bookshop.view.user;
 
 import lombok.RequiredArgsConstructor;
+import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.book.bookshop.model.User;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -10,35 +11,36 @@ import java.util.List;
 import java.util.Scanner;
 
 @Component
-@RequiredArgsConstructor
 public class AdminView extends UserView {
 
-    @Autowired
-    private final Scanner scanner;
+
+    public AdminView(Scanner scanner) {
+        super(scanner);
+    }
 
     public String adminOptions() {
         System.out.println("1. Add an employee");
-        System.out.println("2. Add a book");
-        System.out.println("3. Remove a book");
-        System.out.println("4. Add category");
+        System.out.println("2. Show all users");
+        System.out.println("3. Add a book");
+        System.out.println("4. Remove a book");
+        System.out.println("5. Show all books");
+        System.out.println("6. Add category");
         System.out.println("0. Exit");
 
         return scanner.nextLine();
     }
 
-    public String[] addEmployee() {
-        System.out.println("Username: ");
-        String username = scanner.nextLine();
+    public void showAllUsers(List<User> users){
+        System.out.println("List of all users:\n");
 
-        System.out.println("Email: ");
-        String email = scanner.nextLine();
+        for(int i = 0; i < users.size(); i++) {
+            User user = users.get(i);
+            System.out.printf("%d. %s %s %s\n", i + 1, user.getUsername(),
+                    user.getEmail(), user.getRole());
+        }
 
-        System.out.println("Password: ");
-        String password = scanner.nextLine();
-
-        return new String[] { username, email, password };
+        System.out.println();
     }
-
     public String[] addBook(List<Category> categories) {
         System.out.println("Name of book: ");
         String name = scanner.nextLine();
@@ -64,6 +66,18 @@ public class AdminView extends UserView {
         return new String[] { name, author, price, categoriesString, year };
     }
 
+    public void showAllBooks(List<Book> books) {
+        System.out.println("All books present: \n");
+
+        for(int i = 0; i < books.size(); i++) {
+            Book book = books.get(i);
+            System.out.printf("%d. %s by %s, %d\n", i + 1, book.getName(), book.getAuthor(),
+                    book.getYear());
+        }
+
+        System.out.println();
+    }
+
     public List<String> addCategories() {
         List<String> categories = new ArrayList<>();
 
@@ -79,9 +93,6 @@ public class AdminView extends UserView {
 
         return categories;
     }
-    public void displayNoCategoryError() {
-        System.out.println("No categories entered to choose from!");
-    }
 
     public void displayBookSuccess() {
         System.out.println("Book successfully added!");
@@ -90,4 +101,5 @@ public class AdminView extends UserView {
     public void displayCategorySuccess() {
         System.out.println("Category successfully added!");
     }
+
 }

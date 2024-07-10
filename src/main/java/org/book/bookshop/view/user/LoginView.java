@@ -43,8 +43,8 @@ public class LoginView {
         return new String[] {username, email, password};
     }
 
-    public void displayError(String errorMessage) {
-        System.out.println(errorMessage);
+    public void displayError(String message) {
+        System.out.println(message);
     }
 
     public void displayRegistrationSuccess() {
