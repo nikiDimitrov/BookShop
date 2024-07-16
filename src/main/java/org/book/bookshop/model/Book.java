@@ -21,7 +21,7 @@ public class Book {
     private String author;
     private double price;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     private List<Category> categories;
 
     private int year;

@@ -2,7 +2,6 @@ package org.book.bookshop.controller.user;
 
 import lombok.RequiredArgsConstructor;
 import org.book.bookshop.exceptions.NoBooksException;
-import org.book.bookshop.exceptions.NoCategoriesException;
 import org.book.bookshop.exceptions.UserNotFoundException;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
@@ -30,8 +29,6 @@ public class AdminController extends UserController {
 
     private final AdminView view;
     private final LoginView loginView;
-    @Autowired
-    private UserService userService;
 
 
     @Override
@@ -41,8 +38,8 @@ public class AdminController extends UserController {
             case 1 -> registerEmployee();
             case 2 -> showAllUsers();
             case 3 -> addBook();
+            case 4 -> removeBook();
             case 5 -> showAllBooks();
-            case 6 -> addCategory();
         }
 
         return input;
@@ -68,7 +65,7 @@ public class AdminController extends UserController {
         List<User> users = new ArrayList<>();
 
         try {
-           users = userService.findAllUsers();
+           users = service.findAllUsers();
         }
         catch(UserNotFoundException e) {
             view.displayError(e.getMessage());
@@ -79,62 +76,56 @@ public class AdminController extends UserController {
     }
 
     public void addBook() {
-        List<Category> categories = new ArrayList<>();
+        String[] bookDetails = view.addBook();
+
+        String name = bookDetails[0];
+        String author = bookDetails[1];
+        double price = Double.parseDouble(bookDetails[2]);
+        List<Category> chosenCategories = getCategoriesByNames(bookDetails[3]);
+        int year = Integer.parseInt(bookDetails[4]);
+
+        Book book = bookService.saveBook(name, author, price, chosenCategories, year);
+
+        if(book == null) {
+            //needs to be refactored, temporary code
+            view.displayError("Book is not successfully added!");
+        }
+        else {
+            view.displayAddingBookSuccess();
+        }
+    }
+
+    public void removeBook() {
+        List<Book> books;
 
         try {
-            categories = categoryService.getAllCategories();
+            books = bookService.findAllBooks();
+            String argument = view.removeBook(books);
+
+            try {
+                int index = Integer.parseInt(argument);
+
+                bookService.deleteBook(books.get(index - 1));
+                view.displayDeletingBookSuccess();
+            }
+            catch(RuntimeException e) {
+                view.displayError("Incorrect argument!");
+            }
         }
-        catch (NoCategoriesException e) {
+        catch(NoBooksException e) {
             view.displayError(e.getMessage());
-        }
-        finally {
-            String[] bookDetails = view.addBook(categories);
-
-            String name = bookDetails[0];
-            String author = bookDetails[1];
-            double price = Double.parseDouble(bookDetails[2]);
-            List<Category> chosenCategories = getCategoriesByNames(bookDetails[3]);
-            int year = Integer.parseInt(bookDetails[4]);
-
-            Book book = bookService.saveBook(name, author, price, chosenCategories, year);
-
-            if(book == null) {
-                //needs to be refactored, temporary code
-                view.displayError("Book is not successfully added!");
-            }
-            else {
-                view.displayBookSuccess();
-            }
         }
     }
 
     public void showAllBooks() {
-        List<Book> books = new ArrayList<>();
+        List<Book> books;
 
         try {
             books = bookService.findAllBooks();
+            view.showAllBooks(books);
         }
         catch(NoBooksException e){
             view.displayError(e.getMessage());
-        }
-        finally {
-            view.showAllBooks(books);
-        }
-    }
-
-    public void addCategory() {
-        List<String> categoryNames = view.addCategories();
-
-        for(String categoryName : categoryNames) {
-            Category category = categoryService.saveCategory(categoryName);
-
-            if(category == null) {
-                //needs refactoring too
-                throw new RuntimeException("Category wasn't added successfully!");
-            }
-            else {
-                view.displayCategorySuccess();
-            }
         }
     }
 
@@ -145,7 +136,11 @@ public class AdminController extends UserController {
         String[] categoriesNames = categoriesString.split(", ");
 
         for(String categoryName : categoriesNames) {
-            Category category = categoryService.getCategoryByName(categoryName);
+            Category category = categoryService.getCategoryByName(categoryName.toLowerCase());
+
+            if(category == null){
+                category = categoryService.saveCategory(categoryName.toLowerCase());
+            }
             categories.add(category);
         }
 

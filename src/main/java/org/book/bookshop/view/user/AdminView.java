@@ -1,6 +1,5 @@
 package org.book.bookshop.view.user;
 
-import lombok.RequiredArgsConstructor;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
 import org.book.bookshop.model.User;
@@ -24,7 +23,6 @@ public class AdminView extends UserView {
         System.out.println("3. Add a book");
         System.out.println("4. Remove a book");
         System.out.println("5. Show all books");
-        System.out.println("6. Add category");
         System.out.println("0. Exit");
 
         return scanner.nextLine();
@@ -41,7 +39,7 @@ public class AdminView extends UserView {
 
         System.out.println();
     }
-    public String[] addBook(List<Category> categories) {
+    public String[] addBook() {
         System.out.println("Name of book: ");
         String name = scanner.nextLine();
 
@@ -51,12 +49,7 @@ public class AdminView extends UserView {
         System.out.println("Price: ");
         String price = scanner.nextLine();
 
-        System.out.println("Categories: ");
-
-        for(int i = 0; i < categories.size(); i++) {
-            System.out.printf("%d. %s\n", i + 1, categories.get(i).getName());
-        }
-        System.out.println("Type categories: ");
+        System.out.println("Categories (with , in between): ");
 
         String categoriesString = scanner.nextLine();
 
@@ -73,9 +66,16 @@ public class AdminView extends UserView {
             Book book = books.get(i);
             System.out.printf("%d. %s by %s, %d\n", i + 1, book.getName(), book.getAuthor(),
                     book.getYear());
+            List<Category> categories = book.getCategories();
+            displayCategories(categories);
         }
+    }
 
-        System.out.println();
+    public String removeBook(List<Book> books) {
+        showAllBooks(books);
+        System.out.println("Type number of book to delete: ");
+
+        return scanner.nextLine();
     }
 
     public List<String> addCategories() {
@@ -94,12 +94,21 @@ public class AdminView extends UserView {
         return categories;
     }
 
-    public void displayBookSuccess() {
+    public void displayAddingBookSuccess() {
         System.out.println("Book successfully added!");
+    }
+
+    public void displayDeletingBookSuccess() {
+        System.out.println("Book successfully deleted!");
     }
 
     public void displayCategorySuccess() {
         System.out.println("Category successfully added!");
     }
 
+    private void displayCategories(List<Category> categories) {
+        for(int i = 0; i < categories.size(); i++) {
+            System.out.printf("\t%d. %s\n", i + 1, categories.get(i).getName());
+        }
+    }
 }

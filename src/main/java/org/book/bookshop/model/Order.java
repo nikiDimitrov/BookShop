@@ -20,7 +20,7 @@ public class Order {
     @OneToOne
     private User user;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     private List<Book> books;
 
     private double totalPrice;
