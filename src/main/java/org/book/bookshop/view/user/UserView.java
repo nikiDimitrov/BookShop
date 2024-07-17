@@ -1,18 +1,16 @@
 package org.book.bookshop.view.user;
 
-import lombok.RequiredArgsConstructor;
+import org.book.bookshop.model.Book;
+import org.book.bookshop.model.Category;
 import org.book.bookshop.model.User;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.Scanner;
+import java.util.List;
 
 
 @Component
-@RequiredArgsConstructor
-public abstract class UserView {
-
-    protected final Scanner scanner;
+public class UserView {
 
     //to implement admin, client and employee features
     public void intro(User user) {
@@ -38,4 +36,21 @@ public abstract class UserView {
         System.out.println(errorMessage);
     }
 
+    public void showAllBooks(List<Book> books) {
+        System.out.println("All books present: \n");
+
+        for(int i = 0; i < books.size(); i++) {
+            Book book = books.get(i);
+            System.out.printf("%d. %s by %s, %d\n", i + 1, book.getName(), book.getAuthor(),
+                    book.getYear());
+            List<Category> categories = book.getCategories();
+            displayCategories(categories);
+        }
+    }
+
+    private void displayCategories(List<Category> categories) {
+        for(int i = 0; i < categories.size(); i++) {
+            System.out.printf("\t%d. %s\n", i + 1, categories.get(i).getName());
+        }
+    }
 }

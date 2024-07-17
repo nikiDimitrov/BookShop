@@ -12,23 +12,20 @@ import org.book.bookshop.service.CategoryService;
 import org.book.bookshop.service.UserService;
 import org.book.bookshop.view.user.AdminView;
 import org.book.bookshop.view.user.LoginView;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Controller
-@RequiredArgsConstructor
 public class AdminController extends UserController {
 
-    @Autowired
-    private final UserService service;
-    private final CategoryService categoryService;
-    private final BookService bookService;
-
     private final AdminView view;
-    private final LoginView loginView;
+
+    public AdminController(BookService bookService, LoginView loginView, UserService service, CategoryService categoryService, AdminView view) {
+        super(bookService, loginView, service, categoryService);
+        this.view = view;
+    }
 
 
     @Override

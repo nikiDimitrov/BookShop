@@ -23,6 +23,7 @@ public class MainController {
     public void run() throws IOException {
         User user = loginController.run();
         UserController controller = userControllerFactory.getController(user);
+
         userView.intro(user);
 
         int input = controller.run();

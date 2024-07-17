@@ -1,7 +1,7 @@
 package org.book.bookshop.view.user;
 
+import lombok.RequiredArgsConstructor;
 import org.book.bookshop.model.Book;
-import org.book.bookshop.model.Category;
 import org.book.bookshop.model.User;
 import org.springframework.stereotype.Component;
 
@@ -10,12 +10,10 @@ import java.util.List;
 import java.util.Scanner;
 
 @Component
+@RequiredArgsConstructor
 public class AdminView extends UserView {
 
-
-    public AdminView(Scanner scanner) {
-        super(scanner);
-    }
+    private final Scanner scanner;
 
     public String adminOptions() {
         System.out.println("1. Add an employee");
@@ -39,6 +37,7 @@ public class AdminView extends UserView {
 
         System.out.println();
     }
+    
     public String[] addBook() {
         System.out.println("Name of book: ");
         String name = scanner.nextLine();
@@ -57,18 +56,6 @@ public class AdminView extends UserView {
         String year = scanner.nextLine();
 
         return new String[] { name, author, price, categoriesString, year };
-    }
-
-    public void showAllBooks(List<Book> books) {
-        System.out.println("All books present: \n");
-
-        for(int i = 0; i < books.size(); i++) {
-            Book book = books.get(i);
-            System.out.printf("%d. %s by %s, %d\n", i + 1, book.getName(), book.getAuthor(),
-                    book.getYear());
-            List<Category> categories = book.getCategories();
-            displayCategories(categories);
-        }
     }
 
     public String removeBook(List<Book> books) {
@@ -104,11 +91,5 @@ public class AdminView extends UserView {
 
     public void displayCategorySuccess() {
         System.out.println("Category successfully added!");
-    }
-
-    private void displayCategories(List<Category> categories) {
-        for(int i = 0; i < categories.size(); i++) {
-            System.out.printf("\t%d. %s\n", i + 1, categories.get(i).getName());
-        }
     }
 }
