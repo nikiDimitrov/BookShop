@@ -8,6 +8,7 @@ import org.book.bookshop.model.Role;
 import org.book.bookshop.model.User;
 import org.book.bookshop.service.BookService;
 import org.book.bookshop.service.CategoryService;
+import org.book.bookshop.service.OrderService;
 import org.book.bookshop.service.UserService;
 import org.book.bookshop.view.user.AdminView;
 import org.book.bookshop.view.user.LoginView;
@@ -21,21 +22,22 @@ public class AdminController extends UserController {
 
     private final AdminView view;
 
-    public AdminController(BookService bookService, LoginView loginView, UserService service, CategoryService categoryService, AdminView view) {
-        super(bookService, loginView, service, categoryService);
+    public AdminController(BookService bookService, LoginView loginView, UserService service, CategoryService categoryService, OrderService orderService, AdminView view) {
+        super(bookService, loginView, service, orderService, categoryService);
         this.view = view;
     }
 
-
     @Override
-    public int run() {
+    public int run(User user) {
+        this.user = user;
+
         int input = Integer.parseInt(view.adminOptions());
         switch(input) {
             case 1 -> registerEmployee();
             case 2 -> showAllUsers();
             case 3 -> addBook();
             case 4 -> removeBook();
-            case 5 -> showAllBooks();
+            case 5 -> showAllBooks(true);
         }
 
         return input;
@@ -109,18 +111,6 @@ public class AdminController extends UserController {
             }
         }
         catch (NoBooksException e) {
-            view.displayError(e.getMessage());
-        }
-    }
-
-    public void showAllBooks() {
-        List<Book> books;
-
-        try {
-            books = bookService.findAllBooks();
-            view.showAllBooks(books);
-        }
-        catch(NoBooksException e){
             view.displayError(e.getMessage());
         }
     }

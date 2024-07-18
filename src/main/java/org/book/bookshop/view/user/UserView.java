@@ -7,11 +7,9 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.List;
 
-
 @Component
 public class UserView {
 
-    //to implement admin, client and employee features
     public void intro(User user) {
         System.out.printf("Welcome, %s %s!\n", user.getRole(), user.getUsername());
         System.out.println("\nWhat do you want to do?");
@@ -35,15 +33,17 @@ public class UserView {
         System.out.println(errorMessage);
     }
 
-    public void showAllBooks(List<Book> books) {
+    public void showAllBooks(List<Book> books, boolean showCategories) {
         System.out.println("All books present: \n");
 
         for(int i = 0; i < books.size(); i++) {
             Book book = books.get(i);
             System.out.printf("%d. %s by %s, %d\n", i + 1, book.getName(), book.getAuthor(),
                     book.getYear());
-            List<Category> categories = book.getCategories();
-            displayCategories(categories);
+            if(showCategories) {
+                List<Category> categories = book.getCategories();
+                displayCategories(categories);
+            }
         }
     }
 

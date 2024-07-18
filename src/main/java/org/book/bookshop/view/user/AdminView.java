@@ -59,7 +59,7 @@ public class AdminView extends UserView {
     }
 
     public String removeBook(List<Book> books) {
-        showAllBooks(books);
+        showAllBooks(books, false);
         System.out.println("Type number of book to delete: ");
 
         return scanner.nextLine();
@@ -87,9 +87,5 @@ public class AdminView extends UserView {
 
     public void displayDeletingBookSuccess() {
         System.out.println("Book successfully deleted!");
-    }
-
-    public void displayCategorySuccess() {
-        System.out.println("Category successfully added!");
     }
 }

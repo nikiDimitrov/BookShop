@@ -12,6 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class BookService {
+
     private final BookRepository bookRepository;
 
     public List<Book> findAllBooks() throws NoBooksException {
@@ -21,7 +22,7 @@ public class BookService {
             throw new NoBooksException("No books found!");
         }
 
-        return bookRepository.findAll();
+        return books;
     }
 
     public List<Book> findBooksByAuthor(String author) {
