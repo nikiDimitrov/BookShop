@@ -4,7 +4,6 @@ import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
 import org.book.bookshop.model.User;
 import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.util.List;
 

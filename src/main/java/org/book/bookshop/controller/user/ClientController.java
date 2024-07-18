@@ -4,7 +4,6 @@ import org.book.bookshop.service.CategoryService;
 import org.book.bookshop.service.UserService;
 import org.book.bookshop.view.user.ClientView;
 import org.book.bookshop.view.user.LoginView;
-import org.book.bookshop.view.user.UserView;
 import org.springframework.stereotype.Controller;
 
 @Controller

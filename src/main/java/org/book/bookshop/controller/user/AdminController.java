@@ -1,6 +1,5 @@
 package org.book.bookshop.controller.user;
 
-import lombok.RequiredArgsConstructor;
 import org.book.bookshop.exceptions.NoBooksException;
 import org.book.bookshop.exceptions.UserNotFoundException;
 import org.book.bookshop.model.Book;
@@ -64,7 +63,7 @@ public class AdminController extends UserController {
         try {
            users = service.findAllUsers();
         }
-        catch(UserNotFoundException e) {
+        catch (UserNotFoundException e) {
             view.displayError(e.getMessage());
         }
         finally {
@@ -109,7 +108,7 @@ public class AdminController extends UserController {
                 view.displayError("Incorrect argument!");
             }
         }
-        catch(NoBooksException e) {
+        catch (NoBooksException e) {
             view.displayError(e.getMessage());
         }
     }

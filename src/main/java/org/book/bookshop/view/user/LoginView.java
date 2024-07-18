@@ -10,7 +10,6 @@ import java.util.Scanner;
 @RequiredArgsConstructor
 public class LoginView {
 
-    @Autowired
     private final Scanner scanner;
 
     public String generalPrompt() {

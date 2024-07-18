@@ -19,7 +19,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
 
-    @Autowired
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
 

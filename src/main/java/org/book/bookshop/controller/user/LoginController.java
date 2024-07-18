@@ -7,14 +7,12 @@ import org.book.bookshop.model.Role;
 import org.book.bookshop.model.User;
 import org.book.bookshop.service.UserService;
 import org.book.bookshop.view.user.LoginView;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
 @Controller
 @RequiredArgsConstructor
 public class LoginController {
 
-    @Autowired
     private final UserService service;
     private final LoginView view;
 
