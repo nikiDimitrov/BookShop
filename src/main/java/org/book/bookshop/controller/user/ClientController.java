@@ -27,6 +27,9 @@ public class ClientController extends UserController {
     @Override
     public int run(User user) {
         this.user = user;
+
+        view.intro(user);
+
         int input = Integer.parseInt(view.clientOptions());
 
         switch(input) {

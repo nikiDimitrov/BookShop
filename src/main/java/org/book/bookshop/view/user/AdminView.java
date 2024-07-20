@@ -1,11 +1,10 @@
 package org.book.bookshop.view.user;
 
 import lombok.RequiredArgsConstructor;
+import org.book.bookshop.constants.AdminOptionsShower;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.User;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -16,13 +15,7 @@ public class AdminView extends UserView {
     private final Scanner scanner;
 
     public String adminOptions() {
-        System.out.println("1. Add an employee");
-        System.out.println("2. Show all users");
-        System.out.println("3. Add a book");
-        System.out.println("4. Remove a book");
-        System.out.println("5. Show all books");
-        System.out.println("0. Exit");
-
+        AdminOptionsShower.showOptions();
         return scanner.nextLine();
     }
 
@@ -63,22 +56,6 @@ public class AdminView extends UserView {
         System.out.println("Type number of book to delete: ");
 
         return scanner.nextLine();
-    }
-
-    public List<String> addCategories() {
-        List<String> categories = new ArrayList<>();
-
-        System.out.println("Type END when you want to stop entering...");
-        System.out.println("Name of category: ");
-        String categoryName = scanner.nextLine();
-
-        while(!categoryName.equalsIgnoreCase("end")) {
-            categories.add(categoryName);
-            System.out.println("Name of category: ");
-            categoryName = scanner.nextLine();
-        }
-
-        return categories;
     }
 
     public void displayAddingBookSuccess() {

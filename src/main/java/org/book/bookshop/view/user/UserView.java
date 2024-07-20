@@ -34,8 +34,6 @@ public class UserView {
     }
 
     public void showAllBooks(List<Book> books, boolean showCategories) {
-        System.out.println("All books present: \n");
-
         for(int i = 0; i < books.size(); i++) {
             Book book = books.get(i);
             System.out.printf("%d. %s by %s, %d\n", i + 1, book.getName(), book.getAuthor(),

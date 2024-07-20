@@ -40,4 +40,5 @@ public abstract class UserController {
             view.displayError(e.getMessage());
         }
     }
+
 }
