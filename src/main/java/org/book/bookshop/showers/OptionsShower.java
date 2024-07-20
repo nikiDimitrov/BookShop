@@ -1,4 +1,4 @@
-package org.book.bookshop.constants;
+package org.book.bookshop.showers;
 
 public class OptionsShower {
     protected static void showOptions(String[] options) {
@@ -8,4 +8,5 @@ public class OptionsShower {
 
         System.out.println("0. Exit");
     }
+
 }

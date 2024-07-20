@@ -1,8 +1,9 @@
 package org.book.bookshop.view.user;
 
 import lombok.RequiredArgsConstructor;
-import org.book.bookshop.constants.AdminOptionsShower;
+import org.book.bookshop.showers.AdminOptionsShower;
 import org.book.bookshop.model.Book;
+import org.book.bookshop.model.Order;
 import org.book.bookshop.model.User;
 import org.springframework.stereotype.Component;
 import java.util.List;
@@ -56,6 +57,17 @@ public class AdminView extends UserView {
         System.out.println("Type number of book to delete: ");
 
         return scanner.nextLine();
+    }
+
+    public void showAllOrders(List<Order> orders) {
+        System.out.println("All of the pending orders in the system are:\n");
+
+        for(int i = 0; i < orders.size(); i++) {
+            Order order = orders.get(i);
+            System.out.printf("Order %d by %s:\n", i + 1, order.getUser().getUsername());
+            showAllBooks(order.getBooks(), false);
+            System.out.printf("Price of this order is: %.2f\n\n", order.getTotalPrice());
+        }
     }
 
     public void displayAddingBookSuccess() {

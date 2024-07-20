@@ -12,6 +12,8 @@ import org.book.bookshop.view.user.ClientView;
 import org.book.bookshop.view.user.LoginView;
 import org.springframework.stereotype.Controller;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -27,8 +29,6 @@ public class ClientController extends UserController {
     @Override
     public int run(User user) {
         this.user = user;
-
-        view.intro(user);
 
         int input = Integer.parseInt(view.clientOptions());
 
@@ -48,14 +48,20 @@ public class ClientController extends UserController {
             String argument = view.placeOrder(books);
 
             try {
-                int index = Integer.parseInt(argument);
+                int[] bookIndexes = Arrays.stream(argument.split(", "))
+                        .mapToInt(Integer::parseInt).
+                        toArray();
 
-                Book book = books.get(index - 1);
-                String answer = view.confirmOrder(book);
+                List<Book> orderedBooks = new ArrayList<>();
+                for(int i = 0; i < bookIndexes.length; i++) {
+                    orderedBooks.add(books.get(bookIndexes[i] - 1));
+                }
+
+                String answer = view.confirmOrder(orderedBooks);
 
                 if(answer.equalsIgnoreCase("y")) {
-                    view.orderingBook(book);
-                    Order order = orderService.makeOrder(user, book);
+                    view.orderingBooks();
+                    Order order = orderService.makeOrder(user, orderedBooks);
 
                     if(order == null) {
                         view.displayError("Order cannot be made!");

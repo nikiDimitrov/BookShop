@@ -32,8 +32,7 @@ public class OrderService {
         }
     }
 
-    public Order makeOrder(User user, Book... booksElements) {
-        List<Book> books = Arrays.stream(booksElements).toList();
+    public Order makeOrder(User user, List<Book> books) {
 
         Order order = new Order(user, books);
         double totalPrice = order.getBooks()

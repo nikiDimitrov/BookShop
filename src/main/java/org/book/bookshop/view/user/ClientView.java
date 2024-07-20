@@ -1,7 +1,7 @@
 package org.book.bookshop.view.user;
 
 import lombok.RequiredArgsConstructor;
-import org.book.bookshop.constants.ClientOptionsShower;
+import org.book.bookshop.showers.ClientOptionsShower;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Order;
 import org.springframework.stereotype.Component;
@@ -24,17 +24,19 @@ public class ClientView extends UserView {
         System.out.println("What book do you want to order?\n");
         showAllBooks(books, true);
 
-        System.out.println("Pick book by number: ");
+        System.out.println("Pick books by number: ");
 
         return scanner.nextLine();
     }
 
-    public void orderingBook(Book book) {
-        System.out.printf("Ordering %s...\n", book.getName());
+    public void orderingBooks() {
+        System.out.println("Ordering...");
     }
 
-    public String confirmOrder(Book book) {
-        System.out.printf("Are you sure you want to order %s? Y\\N\n", book.getName());
+    public String confirmOrder(List<Book> books) {
+        showAllBooks(books, false);
+        System.out.println("Are you sure you want to order these books? Y\\N\n");
+
 
         return scanner.nextLine();
     }
@@ -50,8 +52,9 @@ public class ClientView extends UserView {
             Order order = orders.get(i);
             System.out.printf("Order %d:\n", i + 1);
             showAllBooks(order.getBooks(), false);
+            System.out.printf("Price of order is: %.2f\n", order.getTotalPrice());
         }
 
-        System.out.println("\nAll of these orders await an employee's approval!");
+        System.out.println("\n\nAll of these orders await an employee's approval!");
     }
 }

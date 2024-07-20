@@ -22,6 +22,7 @@ public class MainController {
         User user = loginController.run();
         UserController controller = userControllerFactory.getController(user);
 
+        userView.intro(user);
         int input = controller.run(user);
 
         while(input != 0) {

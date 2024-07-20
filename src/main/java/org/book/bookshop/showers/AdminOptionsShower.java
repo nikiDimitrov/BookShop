@@ -1,4 +1,4 @@
-package org.book.bookshop.constants;
+package org.book.bookshop.showers;
 
 public class AdminOptionsShower extends OptionsShower{
     public static void showOptions() {
@@ -8,6 +8,7 @@ public class AdminOptionsShower extends OptionsShower{
                 "Add a book",
                 "Remove a book",
                 "Show all books",
+                "Show all orders"
         };
         showOptions(options);
     }

@@ -23,8 +23,6 @@ public class EmployeeController extends UserController {
     public int run(User user) {
         this.user = user;
 
-        view.intro(user);
-
         int input = Integer.parseInt(view.employeeOptions());
         return input;
     }

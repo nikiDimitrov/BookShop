@@ -36,18 +36,23 @@ public class UserView {
     public void showAllBooks(List<Book> books, boolean showCategories) {
         for(int i = 0; i < books.size(); i++) {
             Book book = books.get(i);
-            System.out.printf("%d. %s by %s, %d\n", i + 1, book.getName(), book.getAuthor(),
-                    book.getYear());
             if(showCategories) {
                 List<Category> categories = book.getCategories();
-                displayCategories(categories);
+                System.out.printf("%d. %s by %s, %d, %.2f lv. - %s\n", i + 1, book.getName(), book.getAuthor(),
+                        book.getYear(), book.getPrice(), displayCategories(categories));
+            }
+            else {
+                System.out.printf("%d. %s by %s, %d, %.2f lv.\n", i + 1, book.getName(), book.getAuthor(),
+                        book.getYear(), book.getPrice());
             }
         }
+        System.out.println();
     }
 
-    private void displayCategories(List<Category> categories) {
-        for(int i = 0; i < categories.size(); i++) {
-            System.out.printf("\t%d. %s\n", i + 1, categories.get(i).getName());
-        }
+    private String displayCategories(List<Category> categories) {
+        return String.join(", ", categories
+                .stream()
+                .map(Category::getName)
+                .toList());
     }
 }

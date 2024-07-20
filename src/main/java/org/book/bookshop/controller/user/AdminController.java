@@ -1,11 +1,9 @@
 package org.book.bookshop.controller.user;
 
 import org.book.bookshop.exceptions.NoBooksException;
+import org.book.bookshop.exceptions.NoOrdersException;
 import org.book.bookshop.exceptions.UserNotFoundException;
-import org.book.bookshop.model.Book;
-import org.book.bookshop.model.Category;
-import org.book.bookshop.model.Role;
-import org.book.bookshop.model.User;
+import org.book.bookshop.model.*;
 import org.book.bookshop.service.BookService;
 import org.book.bookshop.service.CategoryService;
 import org.book.bookshop.service.OrderService;
@@ -30,7 +28,6 @@ public class AdminController extends UserController {
     @Override
     public int run(User user) {
         this.user = user;
-        view.intro(user);
 
         int input = Integer.parseInt(view.adminOptions());
         switch(input) {
@@ -39,6 +36,7 @@ public class AdminController extends UserController {
             case 3 -> addBook();
             case 4 -> removeBook();
             case 5 -> showAllBooks(true);
+            case 6 -> showAllOrders();
         }
 
         return input;
@@ -116,6 +114,28 @@ public class AdminController extends UserController {
         }
     }
 
+    public void showAllBooks(boolean showCategories) {
+        List<Book> books;
+
+        try {
+            books = bookService.findAllBooks();
+            view.showAllBooks(books, showCategories);
+        }
+        catch(NoBooksException e){
+            view.displayError(e.getMessage());
+        }
+    }
+
+    public void showAllOrders() {
+        try {
+            List<Order> orders = orderService.findAllOrders();
+            view.showAllOrders(orders);
+        }
+        catch (NoOrdersException e) {
+            view.displayError("No orders found!");
+        }
+
+    }
 
     private List<Category> getCategoriesByNames(String categoriesString) {
         List<Category> categories = new ArrayList<>();
