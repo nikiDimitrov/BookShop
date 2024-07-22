@@ -1,6 +1,7 @@
 package org.book.bookshop.view.user;
 
 import lombok.RequiredArgsConstructor;
+import org.book.bookshop.model.OrderItem;
 import org.book.bookshop.showers.AdminOptionsShower;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Order;
@@ -49,7 +50,10 @@ public class AdminView extends UserView {
         System.out.println("Year: ");
         String year = scanner.nextLine();
 
-        return new String[] { name, author, price, categoriesString, year };
+        System.out.println("Quantity: ");
+        String quantity = scanner.nextLine();
+
+        return new String[] { name, author, price, categoriesString, year, quantity };
     }
 
     public String removeBook(List<Book> books) {
@@ -65,8 +69,8 @@ public class AdminView extends UserView {
         for(int i = 0; i < orders.size(); i++) {
             Order order = orders.get(i);
             System.out.printf("Order %d by %s:\n", i + 1, order.getUser().getUsername());
-            showAllBooks(order.getBooks(), false);
-            System.out.printf("Price of this order is: %.2f\n\n", order.getTotalPrice());
+            showAllBooks(order.getOrderItems().stream().map(OrderItem::getBook).toList(), false);
+            System.out.printf("Price of this order is: %.2f lv.\n\n", order.getTotalPrice());
         }
     }
 

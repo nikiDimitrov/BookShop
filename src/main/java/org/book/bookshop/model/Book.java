@@ -26,11 +26,14 @@ public class Book {
 
     private int year;
 
-    public Book(String name, String author, double price, List<Category> categories, int year) {
+    private int quantity;
+
+    public Book(String name, String author, double price, List<Category> categories, int year, int quantity) {
         this.name = name;
         this.author = author;
         this.price = price;
         this.categories = categories;
         this.year = year;
+        this.quantity = quantity;
     }
 }

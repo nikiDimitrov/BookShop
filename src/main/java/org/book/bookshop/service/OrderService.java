@@ -2,13 +2,12 @@ package org.book.bookshop.service;
 
 import lombok.RequiredArgsConstructor;
 import org.book.bookshop.exceptions.NoOrdersException;
-import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Order;
 import org.book.bookshop.model.User;
 import org.book.bookshop.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -32,12 +31,15 @@ public class OrderService {
         }
     }
 
-    public Order makeOrder(User user, List<Book> books) {
+    public Order save(User user) {
+        return orderRepository.save(new Order(user, new ArrayList<>()));
+    }
 
-        Order order = new Order(user, books);
-        double totalPrice = order.getBooks()
+    public Order makeOrder(Order order) {
+
+        double totalPrice = order.getOrderItems()
                 .stream()
-                .mapToDouble(Book::getPrice)
+                .mapToDouble(o -> o.getBook().getPrice() * o.getQuantity())
                 .sum();
         order.setTotalPrice(totalPrice);
 

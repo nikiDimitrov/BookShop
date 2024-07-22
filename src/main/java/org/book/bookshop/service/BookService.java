@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.book.bookshop.exceptions.NoBooksException;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
+import org.book.bookshop.model.OrderItem;
 import org.book.bookshop.repository.BookRepository;
 import org.springframework.stereotype.Service;
 
@@ -37,9 +38,20 @@ public class BookService {
         return bookRepository.findBooksByYear(year);
     }
 
-    public Book saveBook(String name, String author, double price, List<Category> categories, int year) {
-        Book book = new Book(name, author, price, categories, year);
+    public Book saveBook(String name, String author, double price, List<Category> categories, int year, int quantity) {
+        Book book = new Book(name, author, price, categories, year, quantity);
 
+        return bookRepository.save(book);
+    }
+
+    public void updateBookQuantity(OrderItem orderItem) {
+        Book book = orderItem.getBook();
+        int newQuantity = book.getQuantity() - orderItem.getQuantity();
+        book.setQuantity(newQuantity);
+        bookRepository.save(book);
+    }
+
+    public Book saveBook(Book book) {
         return bookRepository.save(book);
     }
 

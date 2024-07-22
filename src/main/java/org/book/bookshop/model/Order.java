@@ -20,13 +20,13 @@ public class Order {
     @OneToOne
     private User user;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    private List<Book> books;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<OrderItem> orderItems;
 
     private double totalPrice;
 
-    public Order(User user, List<Book> books) {
+    public Order(User user, List<OrderItem> orderItems) {
         this.user = user;
-        this.books = books;
+        this.orderItems = orderItems;
     }
 }

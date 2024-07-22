@@ -38,12 +38,12 @@ public class UserView {
             Book book = books.get(i);
             if(showCategories) {
                 List<Category> categories = book.getCategories();
-                System.out.printf("%d. %s by %s, %d, %.2f lv. - %s\n", i + 1, book.getName(), book.getAuthor(),
-                        book.getYear(), book.getPrice(), displayCategories(categories));
+                System.out.printf("%d. %s by %s, %d, %.2f lv., %d units - %s\n", i + 1, book.getName(), book.getAuthor(),
+                        book.getYear(), book.getPrice(), book.getQuantity(), displayCategories(categories));
             }
             else {
-                System.out.printf("%d. %s by %s, %d, %.2f lv.\n", i + 1, book.getName(), book.getAuthor(),
-                        book.getYear(), book.getPrice());
+                System.out.printf("%d. %s by %s, %d, %.2f lv., %d units\n", i + 1, book.getName(), book.getAuthor(),
+                        book.getYear(), book.getPrice(), book.getQuantity());
             }
         }
         System.out.println();

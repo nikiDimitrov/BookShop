@@ -4,10 +4,7 @@ import org.book.bookshop.exceptions.NoBooksException;
 import org.book.bookshop.exceptions.NoOrdersException;
 import org.book.bookshop.exceptions.UserNotFoundException;
 import org.book.bookshop.model.*;
-import org.book.bookshop.service.BookService;
-import org.book.bookshop.service.CategoryService;
-import org.book.bookshop.service.OrderService;
-import org.book.bookshop.service.UserService;
+import org.book.bookshop.service.*;
 import org.book.bookshop.view.user.AdminView;
 import org.book.bookshop.view.user.LoginView;
 import org.springframework.stereotype.Controller;
@@ -20,8 +17,8 @@ public class AdminController extends UserController {
 
     private final AdminView view;
 
-    public AdminController(BookService bookService, LoginView loginView, UserService service, CategoryService categoryService, OrderService orderService, AdminView view) {
-        super(bookService, loginView, service, orderService, categoryService);
+    public AdminController(BookService bookService, LoginView loginView, UserService service, CategoryService categoryService, OrderService orderService, OrderItemService orderItemService, AdminView view) {
+        super(bookService, loginView, service, orderService, categoryService, orderItemService);
         this.view = view;
     }
 
@@ -80,8 +77,9 @@ public class AdminController extends UserController {
         double price = Double.parseDouble(bookDetails[2]);
         List<Category> chosenCategories = getCategoriesByNames(bookDetails[3]);
         int year = Integer.parseInt(bookDetails[4]);
+        int quantity = Integer.parseInt(bookDetails[5]);
 
-        Book book = bookService.saveBook(name, author, price, chosenCategories, year);
+        Book book = bookService.saveBook(name, author, price, chosenCategories, year, quantity);
 
         if(book == null) {
             //needs to be refactored, temporary code

@@ -1,6 +1,7 @@
 package org.book.bookshop.view.user;
 
 import lombok.RequiredArgsConstructor;
+import org.book.bookshop.model.OrderItem;
 import org.book.bookshop.showers.ClientOptionsShower;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Order;
@@ -20,13 +21,17 @@ public class ClientView extends UserView {
         return scanner.nextLine();
     }
 
-    public String placeOrder(List<Book> books) {
+    public String[] placeOrder(List<Book> books) {
         System.out.println("What book do you want to order?\n");
         showAllBooks(books, true);
 
         System.out.println("Pick books by number: ");
+        String wantedBooks = scanner.nextLine();
 
-        return scanner.nextLine();
+        System.out.println("Pick how many units do you want for each:");
+        String booksUnits = scanner.nextLine();
+
+        return new String[] { wantedBooks, booksUnits };
     }
 
     public void orderingBooks() {
@@ -51,8 +56,8 @@ public class ClientView extends UserView {
         for(int i = 0; i < orders.size(); i++) {
             Order order = orders.get(i);
             System.out.printf("Order %d:\n", i + 1);
-            showAllBooks(order.getBooks(), false);
-            System.out.printf("Price of order is: %.2f\n", order.getTotalPrice());
+            showAllBooks(order.getOrderItems().stream().map(OrderItem::getBook).toList(), false);
+            System.out.printf("Price of order is: %.2f lv.\n", order.getTotalPrice());
         }
 
         System.out.println("\n\nAll of these orders await an employee's approval!");
