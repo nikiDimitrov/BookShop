@@ -3,9 +3,8 @@ package org.book.bookshop.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
 
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -18,13 +17,18 @@ public class Receipt {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToOne
-    private Order order;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    public Receipt(Order order){
-        this.order = order;
+    @OneToMany(mappedBy = "receipt", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<OrderItem> orderItems;
+
+    private double totalPrice;
+
+    public Receipt(User user, List<OrderItem> orderItems, double totalPrice){
+        this.user = user;
+        this.orderItems = orderItems;
+        this.totalPrice = totalPrice;
     }
-
-    @CreatedDate
-    private LocalDateTime dateCreated;
 }

@@ -10,8 +10,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @Data
 @Entity
-@Table(name = "orders")
-public class Order {
+@Table(name = "discarded_orders")
+public class DiscardedOrder {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -21,13 +21,15 @@ public class Order {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "discardedOrder", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<OrderItem> orderItems;
 
     private double totalPrice;
 
-    public Order(User user, List<OrderItem> orderItems) {
+    public DiscardedOrder(User user, List<OrderItem> orderItems, double totalPrice) {
         this.user = user;
         this.orderItems = orderItems;
+        this.totalPrice = totalPrice;
     }
+
 }

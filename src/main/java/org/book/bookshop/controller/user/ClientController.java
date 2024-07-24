@@ -1,18 +1,14 @@
 package org.book.bookshop.controller.user;
 import org.book.bookshop.exceptions.NoBooksException;
-import org.book.bookshop.exceptions.NoOrdersException;
-import org.book.bookshop.model.Book;
-import org.book.bookshop.model.Order;
-import org.book.bookshop.model.OrderItem;
-import org.book.bookshop.model.User;
+import org.book.bookshop.exceptions.NoActiveOrdersException;
+import org.book.bookshop.exceptions.NoDiscardedOrdersException;
+import org.book.bookshop.model.*;
 import org.book.bookshop.service.*;
 import org.book.bookshop.view.user.ClientView;
 import org.book.bookshop.view.user.LoginView;
 import org.springframework.stereotype.Controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Controller
 public class ClientController extends UserController {
@@ -56,19 +52,32 @@ public class ClientController extends UserController {
                         .mapToInt(Integer::parseInt)
                         .toArray();
 
-                List<Book> orderedBooks = new ArrayList<>();
-                for (int bookIndex : bookIndexes) {
-                    orderedBooks.add(books.get(bookIndex - 1));
+                Map<Book, Integer> booksWithQuantities = new HashMap<>();
+
+                for(int i = 0; i < bookIndexes.length; i++) {
+                    Book book = books.get(bookIndexes[i] - 1);
+                    if(quantities[i] <= book.getQuantity()) {
+                        booksWithQuantities.put(books.get(bookIndexes[i] - 1), quantities[i]);
+                    }
+                    else {
+                        view.unitsTooHighError(book);
+                        return;
+                    }
+
                 }
+
+                List<Book> orderedBooks = new ArrayList<>(booksWithQuantities.keySet());
 
                 String answer = view.confirmOrder(orderedBooks);
 
                 if(answer.equalsIgnoreCase("y")) {
                     view.orderingBooks();
+
                     Order order = orderService.save(user);
                     List<OrderItem> orderItems = new ArrayList<>();
-                    for(int i = 0; i < orderedBooks.size(); i++) {
-                        OrderItem orderItem = new OrderItem(order, orderedBooks.get(i), quantities[i]);
+                    for (Book orderedBook : orderedBooks) {
+                        int bookQuantity = booksWithQuantities.get(orderedBook);
+                        OrderItem orderItem = new OrderItem(order, orderedBook, bookQuantity);
                         orderItems.add(orderItemService.saveOrderItem(orderItem));
                     }
                     order.setOrderItems(orderItems);
@@ -79,10 +88,6 @@ public class ClientController extends UserController {
                     }
                     else {
                         view.displayOrderSuccessful();
-                        for(OrderItem orderItem : orderItems) {
-                            //this will be done after the employee finalizes the order, but this is here just for test purposes
-                            bookService.updateBookQuantity(orderItem);
-                        }
                     }
                 }
 
@@ -98,10 +103,20 @@ public class ClientController extends UserController {
 
     public void viewOrders() {
         try {
+            view.startingDisplayActiveOrders();
             List<Order> orders = orderService.findOrdersByUser(user);
             view.viewOrders(orders);
         }
-        catch (NoOrdersException e) {
+        catch (NoActiveOrdersException e) {
+            view.displayError(e.getMessage());
+        }
+
+        try {
+            view.startingDisplayDiscardedOrders();
+            List<DiscardedOrder> discardedOrders = orderService.findDiscardedOrdersByUser(user);
+            view.viewDiscardedOrders(discardedOrders);
+        }
+        catch (NoDiscardedOrdersException e) {
             view.displayError(e.getMessage());
         }
     }

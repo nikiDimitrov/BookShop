@@ -1,7 +1,6 @@
 package org.book.bookshop.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -17,10 +16,19 @@ public class OrderItem {
     private UUID id;
 
     @ManyToOne
+    private Book book;
+
+    @ManyToOne
+    @JoinColumn(name = "order_id")
     private Order order;
 
     @ManyToOne
-    private Book book;
+    @JoinColumn(name = "discarded_order_id")
+    private DiscardedOrder discardedOrder;
+
+    @ManyToOne
+    @JoinColumn(name = "receipt_id")
+    private Receipt receipt;
 
     private int quantity;
 
@@ -30,3 +38,4 @@ public class OrderItem {
         this.quantity = quantity;
     }
 }
+

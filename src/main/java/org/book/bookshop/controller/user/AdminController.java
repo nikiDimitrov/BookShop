@@ -1,7 +1,7 @@
 package org.book.bookshop.controller.user;
 
 import org.book.bookshop.exceptions.NoBooksException;
-import org.book.bookshop.exceptions.NoOrdersException;
+import org.book.bookshop.exceptions.NoActiveOrdersException;
 import org.book.bookshop.exceptions.UserNotFoundException;
 import org.book.bookshop.model.*;
 import org.book.bookshop.service.*;
@@ -129,7 +129,7 @@ public class AdminController extends UserController {
             List<Order> orders = orderService.findAllOrders();
             view.showAllOrders(orders);
         }
-        catch (NoOrdersException e) {
+        catch (NoActiveOrdersException e) {
             view.displayError("No orders found!");
         }
 

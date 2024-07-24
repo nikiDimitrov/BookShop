@@ -2,6 +2,7 @@ package org.book.bookshop.view.user;
 
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
+import org.book.bookshop.model.OrderItem;
 import org.book.bookshop.model.User;
 import org.springframework.stereotype.Component;
 import java.io.IOException;
@@ -46,7 +47,16 @@ public class UserView {
                         book.getYear(), book.getPrice(), book.getQuantity());
             }
         }
-        System.out.println();
+    }
+
+    public void showAllOrderItems(List<OrderItem> orderItems) {
+        for(int i = 0; i < orderItems.size(); i++) {
+            OrderItem orderItem = orderItems.get(i);
+            Book orderedBook = orderItem.getBook();
+
+            System.out.printf("%d. %s by %s, %d, %.2f lv, %d units ordered\n", i + 1, orderedBook.getName(),
+                    orderedBook.getAuthor(), orderedBook.getYear(), orderedBook.getPrice(), orderItem.getQuantity());
+        }
     }
 
     private String displayCategories(List<Category> categories) {
