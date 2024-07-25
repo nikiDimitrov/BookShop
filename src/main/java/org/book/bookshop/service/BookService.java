@@ -51,6 +51,11 @@ public class BookService {
         bookRepository.save(book);
     }
 
+    public void restockBook(Book book, int newQuantity) {
+        book.setQuantity(book.getQuantity() + newQuantity);
+        bookRepository.save(book);
+    }
+
     public void deleteBook(Book book) {
         bookRepository.delete(book);
     }

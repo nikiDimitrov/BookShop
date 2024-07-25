@@ -3,7 +3,6 @@ package org.book.bookshop.view.user;
 import lombok.RequiredArgsConstructor;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Order;
-import org.book.bookshop.model.OrderItem;
 import org.book.bookshop.showers.EmployeeOptionsShower;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +30,20 @@ public class EmployeeView extends UserView {
         return scanner.nextLine();
     }
 
+    public String[] chooseBooksToRestock(List<Book> books) {
+        System.out.println("Which books do you want to restock?");
+
+        showAllBooks(books, false);
+
+        System.out.println("Type the book numbers with a comma:");
+        String bookIndexes = scanner.nextLine();
+
+        System.out.println("Type how many units to add respectively with a comma:");
+        String addedQuantities = scanner.nextLine();
+
+        return new String[] { bookIndexes, addedQuantities };
+    }
+
     public void startApprovingOrders() {
         System.out.println("Listing orders one by one...\n");
     }
@@ -43,7 +56,6 @@ public class EmployeeView extends UserView {
         System.out.println("Order approved!");
     }
 
-
     public void startDiscardingOrder() {
         System.out.println("Discarding order...");
     }
@@ -52,7 +64,13 @@ public class EmployeeView extends UserView {
         System.out.println("Order discarded!");
     }
 
+    public void startRestocking() {
+        System.out.println("Restocking...");
+    }
 
+    public void finishRestocking() {
+        System.out.println("Restocking has finished!");
+    }
     public void noOrdersFound() {
         System.out.println("No orders to approve!");
     }
