@@ -37,67 +37,22 @@ public class ClientController extends UserController {
     }
 
     public void orderBooks() {
-        List<Book> books;
-
         try {
-            books = bookService.findAllBooks();
+            List<Book> books = bookService.findAllBooks();
             String[] arguments = view.placeOrder(books);
 
-            try {
-                int[] bookIndexes = Arrays.stream(arguments[0].split(", "))
-                        .mapToInt(Integer::parseInt)
-                        .toArray();
+            int[] bookIndexes = parseIndexes(arguments[0]);
+            int[] quantities = parseQuantities(arguments[1]);
 
-                int[] quantities = Arrays.stream(arguments[1].split(", "))
-                        .mapToInt(Integer::parseInt)
-                        .toArray();
+            Map<Book, Integer> booksWithQuantities = prepareOrder(books, bookIndexes, quantities);
 
-                Map<Book, Integer> booksWithQuantities = new HashMap<>();
-
-                for(int i = 0; i < bookIndexes.length; i++) {
-                    Book book = books.get(bookIndexes[i] - 1);
-                    if(quantities[i] <= book.getQuantity()) {
-                        booksWithQuantities.put(books.get(bookIndexes[i] - 1), quantities[i]);
-                    }
-                    else {
-                        view.unitsTooHighError(book);
-                        return;
-                    }
-
-                }
-
-                List<Book> orderedBooks = new ArrayList<>(booksWithQuantities.keySet());
-
-                String answer = view.confirmOrder(orderedBooks);
-
-                if(answer.equalsIgnoreCase("y")) {
-                    view.orderingBooks();
-
-                    Order order = orderService.save(user);
-                    List<OrderItem> orderItems = new ArrayList<>();
-                    for (Book orderedBook : orderedBooks) {
-                        int bookQuantity = booksWithQuantities.get(orderedBook);
-                        OrderItem orderItem = new OrderItem(order, orderedBook, bookQuantity);
-                        orderItems.add(orderItemService.saveOrderItem(orderItem));
-                    }
-                    order.setOrderItems(orderItems);
-                    Order result = orderService.makeOrder(order);
-
-                    if(result == null) {
-                        view.displayError("Order cannot be made!");
-                    }
-                    else {
-                        view.displayOrderSuccessful();
-                    }
-                }
-
+            if (!booksWithQuantities.isEmpty() && confirmOrder(booksWithQuantities)) {
+                processOrder(booksWithQuantities);
             }
-            catch(RuntimeException e) {
-                view.displayError("Incorrect argument!");
-            }
-        }
-        catch (NoBooksException e) {
+        } catch (NoBooksException e) {
             view.displayError(e.getMessage());
+        } catch (RuntimeException e) {
+            view.displayError("Incorrect argument!");
         }
     }
 
@@ -115,9 +70,65 @@ public class ClientController extends UserController {
             view.startingDisplayDiscardedOrders();
             List<DiscardedOrder> discardedOrders = orderService.findDiscardedOrdersByUser(user);
             view.viewDiscardedOrders(discardedOrders);
+
+            orderService.deleteDiscardedOrders(discardedOrders);
+            view.displaySuccessfullyDeletedDiscardedOrders();
         }
         catch (NoDiscardedOrdersException e) {
             view.displayError(e.getMessage());
+        }
+    }
+
+
+    private int[] parseIndexes(String indexArgument) {
+        return Arrays.stream(indexArgument.split(", "))
+                .mapToInt(Integer::parseInt)
+                .toArray();
+    }
+
+    private int[] parseQuantities(String quantityArgument) {
+        return Arrays.stream(quantityArgument.split(", "))
+                .mapToInt(Integer::parseInt)
+                .toArray();
+    }
+
+    private Map<Book, Integer> prepareOrder(List<Book> books, int[] bookIndexes, int[] quantities) {
+        Map<Book, Integer> booksWithQuantities = new HashMap<>();
+        for (int i = 0; i < bookIndexes.length; i++) {
+            Book book = books.get(bookIndexes[i] - 1);
+            int quantity = quantities[i];
+            if (quantity <= book.getQuantity()) {
+                booksWithQuantities.put(book, quantity);
+            } else {
+                view.unitsTooHighError(book);
+                return Collections.emptyMap();
+            }
+        }
+        return booksWithQuantities;
+    }
+
+    private boolean confirmOrder(Map<Book, Integer> booksWithQuantities) {
+        List<Book> orderedBooks = new ArrayList<>(booksWithQuantities.keySet());
+        String answer = view.confirmOrder(orderedBooks);
+        return answer.equalsIgnoreCase("y");
+    }
+
+    private void processOrder(Map<Book, Integer> booksWithQuantities) {
+        view.orderingBooks();
+
+        Order order = orderService.save(user);
+        List<OrderItem> orderItems = new ArrayList<>();
+        for (Map.Entry<Book, Integer> entry : booksWithQuantities.entrySet()) {
+            OrderItem orderItem = new OrderItem(order, entry.getKey(), entry.getValue());
+            orderItems.add(orderItemService.saveOrderItem(orderItem));
+        }
+        order.setOrderItems(orderItems);
+        Order result = orderService.makeOrder(order);
+
+        if (result == null) {
+            view.displayError("Order cannot be made!");
+        } else {
+            view.displayOrderSuccessful();
         }
     }
 }

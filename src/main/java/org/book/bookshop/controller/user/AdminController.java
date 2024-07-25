@@ -55,20 +55,6 @@ public class AdminController extends UserController {
         }
     }
 
-    public void showAllUsers() {
-        List<User> users = new ArrayList<>();
-
-        try {
-           users = service.findAllUsers();
-        }
-        catch (UserNotFoundException e) {
-            view.displayError(e.getMessage());
-        }
-        finally {
-            view.showAllUsers(users);
-        }
-    }
-
     public void addBook() {
         String[] bookDetails = view.addBook();
 
@@ -82,7 +68,6 @@ public class AdminController extends UserController {
         Book book = bookService.saveBook(name, author, price, chosenCategories, year, quantity);
 
         if(book == null) {
-            //needs to be refactored, temporary code
             view.displayError("Book is not successfully added!");
         }
         else {
@@ -112,6 +97,20 @@ public class AdminController extends UserController {
         }
     }
 
+    public void showAllUsers() {
+        List<User> users = new ArrayList<>();
+
+        try {
+            users = service.findAllUsers();
+        }
+        catch (UserNotFoundException e) {
+            view.displayError(e.getMessage());
+        }
+        finally {
+            view.showAllUsers(users);
+        }
+    }
+
     public void showAllBooks(boolean showCategories) {
         List<Book> books;
 
@@ -134,6 +133,7 @@ public class AdminController extends UserController {
         }
 
     }
+
 
     private List<Category> getCategoriesByNames(String categoriesString) {
         List<Category> categories = new ArrayList<>();

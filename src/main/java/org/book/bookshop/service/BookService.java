@@ -51,10 +51,6 @@ public class BookService {
         bookRepository.save(book);
     }
 
-    public Book saveBook(Book book) {
-        return bookRepository.save(book);
-    }
-
     public void deleteBook(Book book) {
         bookRepository.delete(book);
     }

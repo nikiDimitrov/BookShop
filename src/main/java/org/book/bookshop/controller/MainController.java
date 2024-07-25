@@ -18,7 +18,7 @@ public class MainController {
     private final UserControllerFactory userControllerFactory;
     private final UserView userView;
 
-    public void run() throws IOException {
+    public void run(){
         User user = loginController.run();
         UserController controller = userControllerFactory.getController(user);
 
@@ -30,6 +30,6 @@ public class MainController {
             input = controller.run(user);
         }
 
-        userView.onExit(user);
+        userView.displayExitMessage(user);
     }
 }

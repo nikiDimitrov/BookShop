@@ -111,4 +111,19 @@ public class OrderService {
 
         return discardedOrder;
     }
+
+    @Transactional
+    public void deleteDiscardedOrders(List<DiscardedOrder> discardedOrders) {
+        for(DiscardedOrder discardedOrder : discardedOrders) {
+            List<OrderItem> orderItems = discardedOrder.getOrderItems();
+
+            for(OrderItem orderItem : orderItems) {
+                orderItem.setDiscardedOrder(null);
+                orderItemRepository.save(orderItem);
+                orderItemRepository.delete(orderItem);
+            }
+
+            discardedOrderRepository.delete(discardedOrder);
+        }
+    }
 }

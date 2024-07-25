@@ -34,10 +34,6 @@ public class ClientView extends UserView {
         return new String[] { wantedBooks, booksUnits };
     }
 
-    public void orderingBooks() {
-        System.out.println("Ordering...");
-    }
-
     public String confirmOrder(List<Book> books) {
         showAllBooks(books, false);
         System.out.println("Are you sure you want to order these books? Y\\N\n");
@@ -69,7 +65,12 @@ public class ClientView extends UserView {
             System.out.printf("Price of order is: %.2f lv.\n\n", discardedOrder.getTotalPrice());
         }
 
-        System.out.println("All of these orders were discarded by an employee!");
+        System.out.println("All of these orders were discarded by an employee! Deleting...");
+    }
+
+
+    public void orderingBooks() {
+        System.out.println("Ordering...");
     }
 
     public void displayOrderSuccessful() {
@@ -86,5 +87,9 @@ public class ClientView extends UserView {
 
     public void unitsTooHighError(Book book) {
         System.out.printf("Wanted units for %s is too high!\n", book.getName());
+    }
+
+    public void displaySuccessfullyDeletedDiscardedOrders() {
+        System.out.println("Discarded orders deleted!");
     }
 }

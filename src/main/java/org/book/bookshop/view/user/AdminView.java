@@ -32,7 +32,7 @@ public class AdminView extends UserView {
 
         System.out.println();
     }
-    
+
     public String[] addBook() {
         System.out.println("Name of book: ");
         String name = scanner.nextLine();

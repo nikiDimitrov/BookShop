@@ -5,8 +5,8 @@ import org.book.bookshop.model.Category;
 import org.book.bookshop.model.OrderItem;
 import org.book.bookshop.model.User;
 import org.springframework.stereotype.Component;
-import java.io.IOException;
 import java.util.List;
+import java.util.Scanner;
 
 @Component
 public class UserView {
@@ -16,22 +16,11 @@ public class UserView {
         System.out.println("\nWhat do you want to do?");
     }
 
-    public void onExit(User user) {
-        System.out.printf("Goodbye, %s! Exiting...\n", user.getUsername());
-    }
-
-    public void awaitEnter() throws IOException {
+    public void awaitEnter(){
         System.out.println("Press ENTER to continue...");
 
-        try {
-            int read = System.in.read(new byte[2]);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void displayError(String errorMessage) {
-        System.out.println(errorMessage);
+        Scanner scanner = new Scanner(System.in);
+        scanner.nextLine();
     }
 
     public void showAllBooks(List<Book> books, boolean showCategories) {
@@ -58,6 +47,15 @@ public class UserView {
                     orderedBook.getAuthor(), orderedBook.getYear(), orderedBook.getPrice(), orderItem.getQuantity());
         }
     }
+
+    public void displayError(String errorMessage) {
+        System.out.println(errorMessage);
+    }
+
+    public void displayExitMessage(User user) {
+        System.out.printf("Goodbye, %s! Exiting...\n", user.getUsername());
+    }
+
 
     private String displayCategories(List<Category> categories) {
         return String.join(", ", categories

@@ -24,12 +24,7 @@ public class EmployeeView extends UserView {
     public String askForApprovalOfOrder(Order order) {
         System.out.printf("Order by %s:\n\n", order.getUser().getUsername());
 
-        List<Book> books  = order.getOrderItems()
-                .stream()
-                .map(OrderItem::getBook)
-                .toList();
-
-        showAllBooks(books, false);
+        showAllOrderItems(order.getOrderItems());
 
         System.out.println("Do you approve this order? Y\\N");
 
@@ -48,6 +43,7 @@ public class EmployeeView extends UserView {
         System.out.println("Order approved!");
     }
 
+
     public void startDiscardingOrder() {
         System.out.println("Discarding order...");
     }
@@ -55,6 +51,7 @@ public class EmployeeView extends UserView {
     public void finishDiscardingOrder() {
         System.out.println("Order discarded!");
     }
+
 
     public void noOrdersFound() {
         System.out.println("No orders to approve!");

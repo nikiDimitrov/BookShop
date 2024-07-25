@@ -7,7 +7,6 @@ import org.book.bookshop.model.Role;
 import org.book.bookshop.model.User;
 import org.book.bookshop.repository.UserRepository;
 import org.book.bookshop.exceptions.IncorrectInputException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -70,11 +69,4 @@ public class UserService {
         return optionalUser.stream().findFirst().orElse(null);
 
     }
-
-    public User loadUserByEmail(String email) {
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-
-        return optionalUser.stream().findFirst().orElse(null);
-    }
-
 }
