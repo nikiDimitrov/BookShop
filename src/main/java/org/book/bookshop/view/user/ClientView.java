@@ -1,10 +1,8 @@
 package org.book.bookshop.view.user;
 
 import lombok.RequiredArgsConstructor;
-import org.book.bookshop.model.DiscardedOrder;
+import org.book.bookshop.model.*;
 import org.book.bookshop.showers.ClientOptionsShower;
-import org.book.bookshop.model.Book;
-import org.book.bookshop.model.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -34,10 +32,9 @@ public class ClientView extends UserView {
         return new String[] { wantedBooks, booksUnits };
     }
 
-    public String confirmOrder(List<Book> books) {
-        showAllBooks(books, false);
+    public String confirmOrder(List<OrderItem> orderItems) {
+        showAllOrderItems(orderItems);
         System.out.println("Are you sure you want to order these books? Y\\N\n");
-
 
         return scanner.nextLine();
     }

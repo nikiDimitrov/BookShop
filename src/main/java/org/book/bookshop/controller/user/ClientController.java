@@ -71,8 +71,11 @@ public class ClientController extends UserController {
             List<DiscardedOrder> discardedOrders = orderService.findDiscardedOrdersByUser(user);
             view.viewDiscardedOrders(discardedOrders);
 
-            orderService.deleteDiscardedOrders(discardedOrders);
-            view.displaySuccessfullyDeletedDiscardedOrders();
+            if(!discardedOrders.isEmpty()) {
+                orderService.deleteDiscardedOrders(discardedOrders);
+                view.displaySuccessfullyDeletedDiscardedOrders();
+            }
+
         }
         catch (NoDiscardedOrdersException e) {
             view.displayError(e.getMessage());
@@ -108,8 +111,9 @@ public class ClientController extends UserController {
     }
 
     private boolean confirmOrder(Map<Book, Integer> booksWithQuantities) {
-        List<Book> orderedBooks = new ArrayList<>(booksWithQuantities.keySet());
-        String answer = view.confirmOrder(orderedBooks);
+        List<OrderItem> orderItems = convertMapToOrderItems(booksWithQuantities);
+        String answer = view.confirmOrder(orderItems);
+
         return answer.equalsIgnoreCase("y");
     }
 
@@ -130,5 +134,16 @@ public class ClientController extends UserController {
         } else {
             view.displayOrderSuccessful();
         }
+    }
+
+    private List<OrderItem> convertMapToOrderItems(Map<Book, Integer> books) {
+        List<OrderItem> orderItems = new ArrayList<>();
+
+        for(Map.Entry<Book, Integer> entry : books.entrySet()) {
+            OrderItem orderItem = new OrderItem(null, entry.getKey(), entry.getValue());
+            orderItems.add(orderItem);
+        }
+
+        return orderItems;
     }
 }
