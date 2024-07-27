@@ -3,6 +3,7 @@ package org.book.bookshop.controller.user;
 import org.book.bookshop.exceptions.NoBooksException;
 import org.book.bookshop.exceptions.NoActiveOrdersException;
 import org.book.bookshop.exceptions.UserNotFoundException;
+import org.book.bookshop.helpers.Validator;
 import org.book.bookshop.model.*;
 import org.book.bookshop.service.*;
 import org.book.bookshop.view.user.AdminView;
@@ -26,7 +27,15 @@ public class AdminController extends UserController {
     public int run(User user) {
         this.user = user;
 
-        int input = Integer.parseInt(view.adminOptions());
+        int input;
+
+        try {
+            input = Integer.parseInt(view.adminOptions());
+        }
+        catch (NumberFormatException e) {
+            return -1;
+        }
+
         switch(input) {
             case 1 -> registerEmployee();
             case 2 -> showAllUsers();
@@ -34,6 +43,9 @@ public class AdminController extends UserController {
             case 4 -> removeBook();
             case 5 -> showAllBooks(true);
             case 6 -> showAllOrders();
+            default -> {
+                if(input != 0) { view.displayWrongOptionError(); }
+            }
         }
 
         return input;
@@ -60,12 +72,24 @@ public class AdminController extends UserController {
 
         String name = bookDetails[0];
         String author = bookDetails[1];
-        double price = Double.parseDouble(bookDetails[2]);
-        List<Category> chosenCategories = getCategoriesByNames(bookDetails[3]);
-        int year = Integer.parseInt(bookDetails[4]);
-        int quantity = Integer.parseInt(bookDetails[5]);
+        String priceString = bookDetails[2];
+        String yearString = bookDetails[3];
+        String quantityString = bookDetails[4];
 
-        Book book = bookService.saveBook(name, author, price, chosenCategories, year, quantity);
+        double price = returnDoubleOrNegativeArgument(priceString);
+        int year = returnIntegerOrNegativeArgument(yearString);
+        int quantity = returnIntegerOrNegativeArgument(quantityString);
+
+        List<Category> chosenCategories = getCategoriesByNames(bookDetails[3]);
+
+        Book book = null;
+
+        try {
+            book = bookService.saveBook(name, author, price, chosenCategories, year, quantity);
+        }
+        catch (IllegalArgumentException e) {
+            view.displayError(e.getMessage());
+        }
 
         if(book == null) {
             view.displayError("Book is not successfully added!");
@@ -138,7 +162,7 @@ public class AdminController extends UserController {
     private List<Category> getCategoriesByNames(String categoriesString) {
         List<Category> categories = new ArrayList<>();
 
-        String[] categoriesNames = categoriesString.split(", ");
+        String[] categoriesNames = categoriesString.split(separator);
 
         for(String categoryName : categoriesNames) {
             Category category = categoryService.getCategoryByName(categoryName.toLowerCase());
@@ -150,5 +174,13 @@ public class AdminController extends UserController {
         }
 
         return categories;
+    }
+
+    private int returnIntegerOrNegativeArgument(String input) {
+        return Validator.isInteger(input) ? Integer.parseInt(input) : -1;
+    }
+
+    private double returnDoubleOrNegativeArgument(String input) {
+        return Validator.isDouble(input) ? Double.parseDouble(input) : -1;
     }
 }

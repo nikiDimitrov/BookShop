@@ -21,6 +21,8 @@ public abstract class UserController {
     protected UserView view;
     protected User user;
 
+    protected String separator = ", *";
+
     public abstract int run(User user);
 
 }

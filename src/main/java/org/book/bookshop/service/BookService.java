@@ -2,6 +2,7 @@ package org.book.bookshop.service;
 
 import lombok.RequiredArgsConstructor;
 import org.book.bookshop.exceptions.NoBooksException;
+import org.book.bookshop.helpers.Validator;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
 import org.book.bookshop.model.OrderItem;
@@ -38,10 +39,15 @@ public class BookService {
         return bookRepository.findBooksByYear(year);
     }
 
-    public Book saveBook(String name, String author, double price, List<Category> categories, int year, int quantity) {
-        Book book = new Book(name, author, price, categories, year, quantity);
+    public Book saveBook(String name, String author, double price, List<Category> categories, int year, int quantity) throws IllegalArgumentException {
+        Book book = Validator.isBookValid(name, author, price, categories, year, quantity);
 
-        return bookRepository.save(book);
+        if(book == null) {
+            throw new IllegalArgumentException("Book is with incorrect arguments!");
+        }
+        else {
+            return bookRepository.save(book);
+        }
     }
 
     public void updateBookQuantity(OrderItem orderItem) {

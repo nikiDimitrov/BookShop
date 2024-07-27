@@ -19,13 +19,24 @@ public class MainController {
     private final UserView userView;
 
     public void run(){
+
         User user = loginController.run();
+
+        while(user == null) {
+            user = loginController.run();
+        }
+
         UserController controller = userControllerFactory.getController(user);
 
         userView.intro(user);
+
         int input = controller.run(user);
 
         while(input != 0) {
+            if(input == -1) {
+                userView.displayError("Argument is not a number! Type a number from the list!");
+            }
+
             userView.awaitEnter();
             input = controller.run(user);
         }

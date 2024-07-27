@@ -23,11 +23,22 @@ public class EmployeeController extends UserController {
     public int run(User user) {
         this.user = user;
 
-        int input = Integer.parseInt(view.employeeOptions());
+        int input;
+
+        try {
+            input = Integer.parseInt(view.employeeOptions());
+        }
+        catch (NumberFormatException e) {
+            return -1;
+        }
+
         switch(input) {
             case 1 -> approveOrders();
             case 2 -> restockBooks();
             case 3 -> showAllBooks(true);
+            default -> {
+                if(input != 0) { view.displayWrongOptionError(); }
+            }
         }
         return input;
     }
@@ -118,25 +129,38 @@ public class EmployeeController extends UserController {
     }
 
     private int[] parseIndexes(String indexArgument) {
-        return Arrays.stream(indexArgument.split(", "))
+        return Arrays.stream(indexArgument.split(separator))
                 .mapToInt(Integer::parseInt)
                 .toArray();
     }
 
     private int[] parseQuantities(String quantityArgument) {
-        return Arrays.stream(quantityArgument.split(", "))
+        return Arrays.stream(quantityArgument.split(separator))
                 .mapToInt(Integer::parseInt)
                 .toArray();
     }
 
     private Map<Book, Integer> prepareBooksWithAddedQuantities(List<Book> books, int[] bookIndexes, int[] quantities) {
         Map<Book, Integer> booksWithAddedQuantities = new HashMap<>();
-        for (int i = 0; i < bookIndexes.length; i++) {
-            Book book = books.get(bookIndexes[i] - 1);
-            int quantity = quantities[i];
 
+        if(bookIndexes.length != quantities.length) {
+            view.displayUnequalNumberOfArgumentsError();
+            return Collections.emptyMap();
+        }
+
+        for (int i = 0; i < bookIndexes.length; i++) {
+            Book book;
+            try {
+                book = books.get(bookIndexes[i] - 1);
+            }
+            catch (IndexOutOfBoundsException e) {
+                view.displayWrongIndexError();
+                return Collections.emptyMap();
+            }
+
+            int quantity = quantities[i];
             if(quantity <= 0) {
-                view.displayError("One of the quantities is below zero! It's not allowed!");
+                view.displayNegativeQuantityError();
                 return Collections.emptyMap();
             }
             else {

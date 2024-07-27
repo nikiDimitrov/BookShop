@@ -21,12 +21,10 @@ public class LoginController {
     public User run() {
         String input = view.generalPrompt();
 
-        if(input.equalsIgnoreCase("login")) {
-            loginUser();
-
-        }
-        if(input.equalsIgnoreCase("register")) {
-            registerUser();
+        switch(input.toLowerCase()) {
+            case "login" -> loginUser();
+            case "register" -> registerUser();
+            default -> view.displayError("Type login or register!");
         }
 
         return currentUser;

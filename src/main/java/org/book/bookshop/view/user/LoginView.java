@@ -15,15 +15,15 @@ public class LoginView {
     public String generalPrompt() {
         System.out.println("Hello! Would you like to login or register?");
 
-        return scanner.nextLine();
+        return scanner.nextLine().trim();
     }
 
     public String[] loginPrompts() {
         System.out.println("Username: ");
-        String username = scanner.nextLine();
+        String username = scanner.nextLine().trim();
 
         System.out.println("Password: ");
-        String password = scanner.nextLine();
+        String password = scanner.nextLine().trim();
 
         return new String[] {username, password};
 
@@ -31,13 +31,13 @@ public class LoginView {
 
     public String[] registerPrompts() {
         System.out.println("Username: ");
-        String username = scanner.nextLine();
+        String username = scanner.nextLine().trim();
 
         System.out.println("Email: ");
-        String email = scanner.nextLine();
+        String email = scanner.nextLine().trim();
 
         System.out.println("Password: ");
-        String password = scanner.nextLine();
+        String password = scanner.nextLine().trim();
 
         return new String[] {username, email, password};
     }

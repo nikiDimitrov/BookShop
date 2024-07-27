@@ -3,6 +3,7 @@ package org.book.bookshop.service;
 import lombok.RequiredArgsConstructor;
 import org.book.bookshop.exceptions.NoUsersException;
 import org.book.bookshop.exceptions.UserNotFoundException;
+import org.book.bookshop.helpers.Validator;
 import org.book.bookshop.model.Role;
 import org.book.bookshop.model.User;
 import org.book.bookshop.repository.UserRepository;
@@ -28,9 +29,14 @@ public class UserService {
             throw new IllegalArgumentException("User with that username or email already exists!");
         }
 
-        String encodedPassword = encoder.encode(password);
+        User user = Validator.isUserValid(username, email, password);
 
-        User user = new User(username, email, encodedPassword);
+        if(user == null) {
+            throw new IllegalArgumentException("Username must be between 3 and 30 characters long, email should be in valid format and password should be at least five characters long!");
+        }
+
+        String encodedPassword = encoder.encode(password);
+        user.setPassword(encodedPassword);
 
         if(userRepository.findAll().isEmpty()) {
             user.setRole(Role.ADMIN);

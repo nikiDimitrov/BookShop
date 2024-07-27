@@ -26,11 +26,21 @@ public class ClientController extends UserController {
     public int run(User user) {
         this.user = user;
 
-        int input = Integer.parseInt(view.clientOptions());
+        int input;
+
+        try {
+            input = Integer.parseInt(view.clientOptions());
+        }
+        catch (NumberFormatException e) {
+            return -1;
+        }
 
         switch(input) {
             case 1 -> orderBooks();
             case 2 -> viewOrders();
+            default -> {
+                if(input != 0) { view.displayWrongOptionError(); }
+            }
         }
 
         return input;
@@ -84,21 +94,36 @@ public class ClientController extends UserController {
 
 
     private int[] parseIndexes(String indexArgument) {
-        return Arrays.stream(indexArgument.split(", "))
+        return Arrays.stream(indexArgument.split(separator))
                 .mapToInt(Integer::parseInt)
                 .toArray();
     }
 
     private int[] parseQuantities(String quantityArgument) {
-        return Arrays.stream(quantityArgument.split(", "))
+        return Arrays.stream(quantityArgument.split(separator))
                 .mapToInt(Integer::parseInt)
                 .toArray();
     }
 
     private Map<Book, Integer> prepareOrder(List<Book> books, int[] bookIndexes, int[] quantities) {
         Map<Book, Integer> booksWithQuantities = new HashMap<>();
+
+        if(bookIndexes.length != quantities.length) {
+            view.displayUnequalNumberOfArgumentsError();
+            return Collections.emptyMap();
+        }
+
         for (int i = 0; i < bookIndexes.length; i++) {
-            Book book = books.get(bookIndexes[i] - 1);
+            Book book;
+
+            try {
+                book = books.get(bookIndexes[i] - 1);
+            }
+            catch (IndexOutOfBoundsException e) {
+                view.displayWrongIndexError();
+                return Collections.emptyMap();
+            }
+
             int quantity = quantities[i];
             if (quantity <= book.getQuantity()) {
                 booksWithQuantities.put(book, quantity);
@@ -107,6 +132,7 @@ public class ClientController extends UserController {
                 return Collections.emptyMap();
             }
         }
+
         return booksWithQuantities;
     }
 
@@ -122,10 +148,12 @@ public class ClientController extends UserController {
 
         Order order = orderService.save(user);
         List<OrderItem> orderItems = new ArrayList<>();
+        
         for (Map.Entry<Book, Integer> entry : booksWithQuantities.entrySet()) {
             OrderItem orderItem = new OrderItem(order, entry.getKey(), entry.getValue());
             orderItems.add(orderItemService.saveOrderItem(orderItem));
         }
+        
         order.setOrderItems(orderItems);
         Order result = orderService.makeOrder(order);
 

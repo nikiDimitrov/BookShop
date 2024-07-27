@@ -18,7 +18,7 @@ public class AdminView extends UserView {
 
     public String adminOptions() {
         AdminOptionsShower.showOptions();
-        return scanner.nextLine();
+        return scanner.nextLine().trim();
     }
 
     public void showAllUsers(List<User> users){
@@ -35,23 +35,23 @@ public class AdminView extends UserView {
 
     public String[] addBook() {
         System.out.println("Name of book: ");
-        String name = scanner.nextLine();
+        String name = scanner.nextLine().trim();
 
         System.out.println("Author: ");
-        String author = scanner.nextLine();
+        String author = scanner.nextLine().trim();
 
         System.out.println("Price: ");
-        String price = scanner.nextLine();
+        String price = scanner.nextLine().trim();
 
-        System.out.println("Categories (with , in between): ");
+        System.out.println("Categories, separated by commas: ");
 
-        String categoriesString = scanner.nextLine();
+        String categoriesString = scanner.nextLine().trim();
 
         System.out.println("Year: ");
-        String year = scanner.nextLine();
+        String year = scanner.nextLine().trim();
 
         System.out.println("Quantity: ");
-        String quantity = scanner.nextLine();
+        String quantity = scanner.nextLine().trim();
 
         return new String[] { name, author, price, categoriesString, year, quantity };
     }
@@ -60,7 +60,7 @@ public class AdminView extends UserView {
         showAllBooks(books, false);
         System.out.println("Type number of book to delete: ");
 
-        return scanner.nextLine();
+        return scanner.nextLine().trim();
     }
 
     public void showAllOrders(List<Order> orders) {

@@ -23,11 +23,11 @@ public class ClientView extends UserView {
         System.out.println("What book do you want to order?\n");
         showAllBooks(books, true);
 
-        System.out.println("Pick books by number: ");
-        String wantedBooks = scanner.nextLine();
+        System.out.println("Pick books by numbers, separated by commas: ");
+        String wantedBooks = scanner.nextLine().trim();
 
-        System.out.println("Pick how many units do you want for each:");
-        String booksUnits = scanner.nextLine();
+        System.out.println("Pick how many units do you want for each, separated by commas:");
+        String booksUnits = scanner.nextLine().trim();
 
         return new String[] { wantedBooks, booksUnits };
     }
@@ -36,7 +36,7 @@ public class ClientView extends UserView {
         showAllOrderItems(orderItems);
         System.out.println("Are you sure you want to order these books? Y\\N\n");
 
-        return scanner.nextLine();
+        return scanner.nextLine().trim();
     }
 
     public void viewOrders(List<Order> orders) {

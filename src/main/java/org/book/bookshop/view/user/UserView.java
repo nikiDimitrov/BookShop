@@ -52,6 +52,22 @@ public class UserView {
         System.out.println(errorMessage);
     }
 
+    public void displayWrongOptionError() {
+        System.out.println("Option is wrong! Type a number present in the option list!");
+    }
+
+    public void displayUnequalNumberOfArgumentsError() {
+        System.out.println("Number of indexes and quantities are not the same! Cancelling...");
+    }
+
+    public void displayWrongIndexError() {
+        System.out.println("One of the indexes is wrong! Cancelling...");
+    }
+
+    public void displayNegativeQuantityError() {
+        System.out.println("One of the quantities is below zero! It's not allowed!");
+    }
+
     public void displayExitMessage(User user) {
         System.out.printf("Goodbye, %s! Exiting...\n", user.getUsername());
     }

@@ -35,11 +35,11 @@ public class EmployeeView extends UserView {
 
         showAllBooks(books, false);
 
-        System.out.println("Type the book numbers with a comma:");
-        String bookIndexes = scanner.nextLine();
+        System.out.println("Type the book numbers, separated by a comma:");
+        String bookIndexes = scanner.nextLine().trim();
 
-        System.out.println("Type how many units to add respectively with a comma:");
-        String addedQuantities = scanner.nextLine();
+        System.out.println("Type how many units to add, separated by a comma:");
+        String addedQuantities = scanner.nextLine().trim();
 
         return new String[] { bookIndexes, addedQuantities };
     }
