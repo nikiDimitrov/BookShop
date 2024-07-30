@@ -1,6 +1,5 @@
 package org.book.bookshop.view.user;
 
-import lombok.RequiredArgsConstructor;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Order;
 import org.book.bookshop.showers.EmployeeOptionsShower;
@@ -10,10 +9,11 @@ import java.util.List;
 import java.util.Scanner;
 
 @Component
-@RequiredArgsConstructor
 public class EmployeeView extends UserView {
 
-    private final Scanner scanner;
+    public EmployeeView(Scanner scanner) {
+        super(scanner);
+    }
 
     public String employeeOptions() {
         EmployeeOptionsShower.showOptions();
@@ -71,6 +71,7 @@ public class EmployeeView extends UserView {
     public void finishRestocking() {
         System.out.println("Restocking has finished!");
     }
+
     public void noOrdersFound() {
         System.out.println("No orders to approve!");
     }

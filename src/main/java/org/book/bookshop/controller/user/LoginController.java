@@ -1,4 +1,5 @@
 package org.book.bookshop.controller.user;
+
 import lombok.RequiredArgsConstructor;
 import org.book.bookshop.exceptions.IncorrectInputException;
 import org.book.bookshop.exceptions.NoUsersException;
@@ -15,13 +16,14 @@ public class LoginController {
 
     private final UserService service;
     private final LoginView view;
+    private static final Object lock = new Object();
 
     private User currentUser;
 
     public User run() {
         String input = view.generalPrompt();
 
-        switch(input.toLowerCase()) {
+        switch (input.toLowerCase()) {
             case "login" -> loginUser();
             case "register" -> registerUser();
             default -> view.displayError("Type login or register!");
@@ -37,12 +39,13 @@ public class LoginController {
         String email = registerDetails[1];
         String password = registerDetails[2];
 
-        try {
-            currentUser = service.registerUser(username, email, password, Role.CLIENT);
-            view.displayRegistrationSuccess();
-        }
-        catch (IllegalArgumentException e) {
-            view.displayError(e.getMessage());
+        synchronized (lock) {
+            try {
+                currentUser = service.registerUser(username, email, password, Role.CLIENT);
+                view.displayRegistrationSuccess();
+            } catch (IllegalArgumentException e) {
+                view.displayError(e.getMessage());
+            }
         }
     }
 
@@ -52,13 +55,14 @@ public class LoginController {
         String username = loginDetails[0];
         String password = loginDetails[1];
 
-        try {
-            currentUser = service.loginUser(username, password);
-            view.displayLoginSuccess();
-        }
-        catch (IncorrectInputException | UserNotFoundException
-                | NoUsersException e) {
-            view.displayError(e.getMessage());
+        synchronized (lock) {
+            try {
+                currentUser = service.loginUser(username, password);
+                view.displayLoginSuccess();
+            } catch (IncorrectInputException | UserNotFoundException
+                     | NoUsersException e) {
+                view.displayError(e.getMessage());
+            }
         }
     }
 }

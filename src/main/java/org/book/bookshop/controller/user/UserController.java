@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 @Controller
 @RequiredArgsConstructor
 public abstract class UserController {
+    //controllers shouldn't be abstract
 
     protected final BookService bookService;
     protected final LoginView loginView;
@@ -21,7 +22,7 @@ public abstract class UserController {
     protected UserView view;
     protected User user;
 
-    protected String separator = ", *";
+    protected static final String SEPARATOR = ", *";
 
     public abstract int run(User user);
 

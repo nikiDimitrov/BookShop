@@ -1,8 +1,9 @@
 package org.book.bookshop.service;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.book.bookshop.exceptions.NoBooksException;
-import org.book.bookshop.helpers.Validator;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
 import org.book.bookshop.model.OrderItem;
@@ -10,12 +11,14 @@ import org.book.bookshop.repository.BookRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Service
 public class BookService {
 
     private final BookRepository bookRepository;
+    private final Validator validator;
 
     public List<Book> findAllBooks() throws NoBooksException {
         List<Book> books = bookRepository.findAll();
@@ -40,14 +43,15 @@ public class BookService {
     }
 
     public Book saveBook(String name, String author, double price, List<Category> categories, int year, int quantity) throws IllegalArgumentException {
-        Book book = Validator.isBookValid(name, author, price, categories, year, quantity);
+        Book book = new Book(name, author, price, categories, year, quantity);
 
-        if(book == null) {
-            throw new IllegalArgumentException("Book is with incorrect arguments!");
+        Set<ConstraintViolation<Book>> violations = validator.validate(book);
+
+        if(!violations.isEmpty()) {
+            throw new IllegalArgumentException("");
         }
-        else {
-            return bookRepository.save(book);
-        }
+
+        return bookRepository.save(book);
     }
 
     public void updateBookQuantity(OrderItem orderItem) {

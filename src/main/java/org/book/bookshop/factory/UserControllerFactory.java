@@ -17,19 +17,11 @@ public class UserControllerFactory {
     private final EmployeeController employeeController;
     private final ClientController clientController;
 
-    //@Autowired
-    //private EmployeeController employeeController;
-
-    //@Autowired
-    //private ClientController clientController;
-
-    public UserController getController(User user) {
-        Role role = user.getRole();
+    public UserController getController(Role role) {
         return switch (role) {
             case ADMIN -> adminController;
             case EMPLOYEE -> employeeController;
             case CLIENT -> clientController;
-            default -> null;
         };
     }
 }

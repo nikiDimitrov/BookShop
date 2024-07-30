@@ -94,13 +94,13 @@ public class ClientController extends UserController {
 
 
     private int[] parseIndexes(String indexArgument) {
-        return Arrays.stream(indexArgument.split(separator))
+        return Arrays.stream(indexArgument.split(SEPARATOR))
                 .mapToInt(Integer::parseInt)
                 .toArray();
     }
 
     private int[] parseQuantities(String quantityArgument) {
-        return Arrays.stream(quantityArgument.split(separator))
+        return Arrays.stream(quantityArgument.split(SEPARATOR))
                 .mapToInt(Integer::parseInt)
                 .toArray();
     }

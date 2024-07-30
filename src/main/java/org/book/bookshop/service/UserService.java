@@ -1,9 +1,10 @@
 package org.book.bookshop.service;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.book.bookshop.exceptions.NoUsersException;
 import org.book.bookshop.exceptions.UserNotFoundException;
-import org.book.bookshop.helpers.Validator;
 import org.book.bookshop.model.Role;
 import org.book.bookshop.model.User;
 import org.book.bookshop.repository.UserRepository;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -21,23 +23,25 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
+    private final Validator validator;
 
     public User registerUser(String username, String email, String password, Role role) throws IllegalArgumentException {
         if(userRepository.findByUsername(username).isPresent()
-                || userRepository.findByEmail(email).isPresent())
-        {
+                || userRepository.findByEmail(email).isPresent()) {
             throw new IllegalArgumentException("User with that username or email already exists!");
         }
 
-        User user = Validator.isUserValid(username, email, password);
+        User user = new User(username, email, password);
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
 
-        if(user == null) {
-            throw new IllegalArgumentException("Username must be between 3 and 30 characters long, email should be in valid format and password should be at least five characters long!");
+        if(!violations.isEmpty()) {
+            throw new IllegalArgumentException("Username and password should be more than 3 characters and email should be in valid format!");
         }
 
         String encodedPassword = encoder.encode(password);
         user.setPassword(encodedPassword);
 
+        // admin creation is unsecure
         if(userRepository.findAll().isEmpty()) {
             user.setRole(Role.ADMIN);
         }

@@ -14,6 +14,7 @@ public class EmployeeController extends UserController {
 
     private final EmployeeView view;
 
+    // to be simplified
     public EmployeeController(BookService bookService, LoginView loginView, UserService service, CategoryService categoryService, EmployeeView employeeView, OrderItemService orderItemService, OrderService orderService) {
         super(bookService, loginView, service, orderService, categoryService, orderItemService);
         this.view = employeeView;
@@ -129,13 +130,13 @@ public class EmployeeController extends UserController {
     }
 
     private int[] parseIndexes(String indexArgument) {
-        return Arrays.stream(indexArgument.split(separator))
+        return Arrays.stream(indexArgument.split(SEPARATOR))
                 .mapToInt(Integer::parseInt)
                 .toArray();
     }
 
     private int[] parseQuantities(String quantityArgument) {
-        return Arrays.stream(quantityArgument.split(separator))
+        return Arrays.stream(quantityArgument.split(SEPARATOR))
                 .mapToInt(Integer::parseInt)
                 .toArray();
     }

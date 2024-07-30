@@ -1,6 +1,5 @@
 package org.book.bookshop.view.user;
 
-import lombok.RequiredArgsConstructor;
 import org.book.bookshop.model.*;
 import org.book.bookshop.showers.ClientOptionsShower;
 import org.springframework.stereotype.Component;
@@ -9,10 +8,11 @@ import java.util.List;
 import java.util.Scanner;
 
 @Component
-@RequiredArgsConstructor
 public class ClientView extends UserView {
 
-    private final Scanner scanner;
+    public ClientView(Scanner scanner) {
+        super(scanner);
+    }
 
     public String clientOptions() {
         ClientOptionsShower.showOptions();

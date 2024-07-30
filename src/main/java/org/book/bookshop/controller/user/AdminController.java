@@ -3,7 +3,7 @@ package org.book.bookshop.controller.user;
 import org.book.bookshop.exceptions.NoBooksException;
 import org.book.bookshop.exceptions.NoActiveOrdersException;
 import org.book.bookshop.exceptions.UserNotFoundException;
-import org.book.bookshop.helpers.Validator;
+import org.book.bookshop.helpers.InputValidator;
 import org.book.bookshop.model.*;
 import org.book.bookshop.service.*;
 import org.book.bookshop.view.user.AdminView;
@@ -162,7 +162,7 @@ public class AdminController extends UserController {
     private List<Category> getCategoriesByNames(String categoriesString) {
         List<Category> categories = new ArrayList<>();
 
-        String[] categoriesNames = categoriesString.split(separator);
+        String[] categoriesNames = categoriesString.split(SEPARATOR);
 
         for(String categoryName : categoriesNames) {
             Category category = categoryService.getCategoryByName(categoryName.toLowerCase());
@@ -177,10 +177,10 @@ public class AdminController extends UserController {
     }
 
     private int returnIntegerOrNegativeArgument(String input) {
-        return Validator.isInteger(input) ? Integer.parseInt(input) : -1;
+        return InputValidator.isInteger(input) ? Integer.parseInt(input) : -1;
     }
 
     private double returnDoubleOrNegativeArgument(String input) {
-        return Validator.isDouble(input) ? Double.parseDouble(input) : -1;
+        return InputValidator.isDouble(input) ? Double.parseDouble(input) : -1;
     }
 }

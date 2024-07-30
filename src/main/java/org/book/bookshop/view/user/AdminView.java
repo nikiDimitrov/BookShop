@@ -1,6 +1,5 @@
 package org.book.bookshop.view.user;
 
-import lombok.RequiredArgsConstructor;
 import org.book.bookshop.model.OrderItem;
 import org.book.bookshop.showers.AdminOptionsShower;
 import org.book.bookshop.model.Book;
@@ -9,12 +8,14 @@ import org.book.bookshop.model.User;
 import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
-@RequiredArgsConstructor
 public class AdminView extends UserView {
 
-    private final Scanner scanner;
+    public AdminView(Scanner scanner) {
+        super(scanner);
+    }
 
     public String adminOptions() {
         AdminOptionsShower.showOptions();
@@ -24,12 +25,9 @@ public class AdminView extends UserView {
     public void showAllUsers(List<User> users){
         System.out.println("List of all users:\n");
 
-        for(int i = 0; i < users.size(); i++) {
-            User user = users.get(i);
-            System.out.printf("%d. %s %s %s\n", i + 1, user.getUsername(),
-                    user.getEmail(), user.getRole());
-        }
-
+        AtomicInteger index = new AtomicInteger(1);
+        users.forEach(user -> System.out.printf("%d. %s %s %s\n", index.getAndIncrement(), user.getUsername(),
+                user.getEmail(), user.getRole()));
         System.out.println();
     }
 
@@ -64,14 +62,21 @@ public class AdminView extends UserView {
     }
 
     public void showAllOrders(List<Order> orders) {
-        System.out.println("All of the pending orders in the system are:\n");
-
-        for(int i = 0; i < orders.size(); i++) {
-            Order order = orders.get(i);
-            System.out.printf("Order %d by %s:\n", i + 1, order.getUser().getUsername());
-            showAllBooks(order.getOrderItems().stream().map(OrderItem::getBook).toList(), false);
-            System.out.printf("Price of this order is: %.2f lv.\n\n", order.getTotalPrice());
+        if(orders.isEmpty()) {
+            System.out.println("No orders found!");
         }
+
+        else {
+            System.out.println("All of the pending orders in the system are:\n");
+
+            AtomicInteger index = new AtomicInteger(1);
+            orders.forEach(order -> {
+                System.out.printf("Order %d by %s:\n", index.getAndIncrement(), order.getUser().getUsername());
+                showAllBooks(order.getOrderItems().stream().map(OrderItem::getBook).toList(), false);
+                System.out.printf("Price of this order is: %.2f lv.\n\n", order.getTotalPrice());
+            });
+        }
+
     }
 
     public void displayAddingBookSuccess() {

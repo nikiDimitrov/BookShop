@@ -14,6 +14,7 @@ import java.io.IOException;
 @Controller
 public class MainController {
 
+    //autowiring other controllers shouldn't happen
     private final LoginController loginController;
     private final UserControllerFactory userControllerFactory;
     private final UserView userView;
@@ -26,7 +27,7 @@ public class MainController {
             user = loginController.run();
         }
 
-        UserController controller = userControllerFactory.getController(user);
+        UserController controller = userControllerFactory.getController(user.getRole());
 
         userView.intro(user);
 

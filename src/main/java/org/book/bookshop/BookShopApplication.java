@@ -2,7 +2,6 @@ package org.book.bookshop;
 
 import lombok.RequiredArgsConstructor;
 import org.book.bookshop.controller.MainController;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -20,11 +19,10 @@ public class BookShopApplication {
     @RequiredArgsConstructor
     @EnableJpaRepositories
     public static class ConsoleRunner implements CommandLineRunner {
-        @Autowired
         private final MainController mainController;
 
         @Override
-        public void run(String... args) throws Exception {
+        public void run(String... args) {
             mainController.run();
         }
     }
