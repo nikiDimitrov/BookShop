@@ -73,14 +73,15 @@ public class AdminController extends UserController {
         String name = bookDetails[0];
         String author = bookDetails[1];
         String priceString = bookDetails[2];
-        String yearString = bookDetails[3];
-        String quantityString = bookDetails[4];
+        String categories = bookDetails[3];
+        String yearString = bookDetails[4];
+        String quantityString = bookDetails[5];
 
         double price = returnDoubleOrNegativeArgument(priceString);
         int year = returnIntegerOrNegativeArgument(yearString);
         int quantity = returnIntegerOrNegativeArgument(quantityString);
 
-        List<Category> chosenCategories = getCategoriesByNames(bookDetails[3]);
+        List<Category> chosenCategories = getCategoriesByNames(categories);
 
         Book book = null;
 

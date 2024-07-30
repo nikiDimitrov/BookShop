@@ -3,6 +3,7 @@ package org.book.bookshop.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -19,10 +20,10 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Min(value = 3, message = "Book name should be more than 3 characters!")
+    @Size(min = 3, message = "Book name should be more than 3 characters!")
     private String name;
 
-    @Min(value = 3, message = "Author's name should be more than 3 characters!")
+    @Size(min = 3, message = "Author's name should be more than 3 characters!")
     private String author;
 
     @Positive(message = "Price should be more than zero!")

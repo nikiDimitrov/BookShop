@@ -48,7 +48,7 @@ public class BookService {
         Set<ConstraintViolation<Book>> violations = validator.validate(book);
 
         if(!violations.isEmpty()) {
-            throw new IllegalArgumentException("");
+            throw new IllegalArgumentException("Book name and author should be more than three characters and price, quantity and year should be positive!");
         }
 
         return bookRepository.save(book);

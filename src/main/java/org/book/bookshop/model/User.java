@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -20,13 +21,13 @@ public class User {
     private UUID id;
 
     @NotNull(message = "Username cannot be null!")
-    @Min(value = 3, message = "Username should be more than 3 characters!")
+    @Size(min = 3, message = "Username should be more than 3 characters!")
     private String username;
 
     @Email(message = "Email should be valid!")
     private String email;
 
-    @Min(value = 3, message = "Password should be more than 3 characters!")
+    @Size(min = 3, message = "Password should be more than 3 characters!")
     private String password;
 
     @Enumerated(EnumType.STRING)
