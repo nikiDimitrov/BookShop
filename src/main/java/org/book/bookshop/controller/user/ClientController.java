@@ -14,12 +14,10 @@ import java.util.*;
 public class ClientController extends UserController {
 
     private final ClientView view;
-    private final BookService bookService;
 
     public ClientController(BookService bookService, LoginView loginView, UserService service, CategoryService categoryService, OrderService orderService, OrderItemService orderItemService, ClientView clientView) {
         super(bookService, loginView, service, orderService, categoryService, orderItemService);
         this.view = clientView;
-        this.bookService = bookService;
     }
 
     @Override
@@ -48,7 +46,7 @@ public class ClientController extends UserController {
 
     public void orderBooks() {
         try {
-            List<Book> books = bookService.findAllBooks();
+            List<Book> books = getAllBooks();
             String[] arguments = view.placeOrder(books);
 
             int[] bookIndexes = parseIndexes(arguments[0]);
@@ -172,6 +170,8 @@ public class ClientController extends UserController {
             orderItems.add(orderItem);
         }
 
-        return orderItems;
+        return orderItems.stream()
+                .sorted(Comparator.comparing(o -> o.getBook().getName()))
+                .toList();
     }
 }

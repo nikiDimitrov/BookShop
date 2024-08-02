@@ -104,7 +104,7 @@ public class AdminController extends UserController {
         List<Book> books;
 
         try {
-            books = bookService.findAllBooks();
+            books = getAllBooks();
             String argument = view.removeBook(books);
 
             try {
@@ -140,7 +140,7 @@ public class AdminController extends UserController {
         List<Book> books;
 
         try {
-            books = bookService.findAllBooks();
+            books = getAllBooks();
             view.showAllBooks(books, showCategories);
         }
         catch(NoBooksException e){

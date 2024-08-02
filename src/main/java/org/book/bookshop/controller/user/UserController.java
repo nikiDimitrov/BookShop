@@ -1,11 +1,20 @@
 package org.book.bookshop.controller.user;
 
 import lombok.RequiredArgsConstructor;
+import org.book.bookshop.exceptions.NoActiveOrdersException;
+import org.book.bookshop.exceptions.NoBooksException;
+import org.book.bookshop.exceptions.NoDiscardedOrdersException;
+import org.book.bookshop.model.Book;
+import org.book.bookshop.model.Order;
 import org.book.bookshop.model.User;
 import org.book.bookshop.service.*;
 import org.book.bookshop.view.user.LoginView;
 import org.book.bookshop.view.user.UserView;
 import org.springframework.stereotype.Controller;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -26,4 +35,10 @@ public abstract class UserController {
 
     public abstract int run(User user);
 
+    protected List<Book> getAllBooks() throws NoBooksException {
+        List<Book> books = bookService.findAllBooks();
+        return books.stream()
+                .sorted(Comparator.comparing(Book::getName))
+                .toList();
+    }
 }

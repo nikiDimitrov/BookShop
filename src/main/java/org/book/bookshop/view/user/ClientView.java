@@ -49,7 +49,7 @@ public class ClientView extends UserView {
             System.out.printf("Price of order is: %.2f lv.\n", order.getTotalPrice());
         }
 
-        System.out.println("\n\nAll of these orders await an employee's approval!");
+        System.out.println("\nAll of these orders await an employee's approval!");
     }
 
     public void viewDiscardedOrders(List<DiscardedOrder> discardedOrders) {

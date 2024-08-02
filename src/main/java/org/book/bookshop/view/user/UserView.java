@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public class UserView {
 
-    final Scanner scanner;
+    protected final Scanner scanner;
 
     public void intro(User user) {
         System.out.printf("Welcome, %s %s!\n", user.getRole(), user.getUsername());

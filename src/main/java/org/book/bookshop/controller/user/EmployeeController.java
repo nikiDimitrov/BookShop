@@ -48,7 +48,7 @@ public class EmployeeController extends UserController {
         view.startApprovingOrders();
 
         List<Order> orders = orderService.findAllOrders();
-        if(orders == null) {
+        if(orders.isEmpty()) {
             view.noOrdersFound();
             return;
         }
@@ -64,7 +64,7 @@ public class EmployeeController extends UserController {
 
     public void restockBooks() {
         try {
-            List<Book> books = bookService.findAllBooks();
+            List<Book> books = getAllBooks();
             String[] arguments = view.chooseBooksToRestock(books);
 
             int[] bookIndexes = parseIndexes(arguments[0]);
@@ -90,7 +90,7 @@ public class EmployeeController extends UserController {
         List<Book> books;
 
         try {
-            books = bookService.findAllBooks();
+            books = getAllBooks();
             view.showAllBooks(books, showCategories);
         }
         catch(NoBooksException e){
