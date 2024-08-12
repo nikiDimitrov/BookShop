@@ -8,13 +8,10 @@ import org.book.bookshop.model.User;
 import org.book.bookshop.view.user.UserView;
 import org.springframework.stereotype.Controller;
 
-import java.io.IOException;
-
 @RequiredArgsConstructor
 @Controller
 public class MainController {
-
-    //autowiring other controllers shouldn't happen
+     
     private final LoginController loginController;
     private final UserControllerFactory userControllerFactory;
     private final UserView userView;

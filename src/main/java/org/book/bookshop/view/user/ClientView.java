@@ -52,9 +52,9 @@ public class ClientView extends UserView {
         System.out.println("\nAll of these orders await an employee's approval!");
     }
 
-    public void viewDiscardedOrders(List<DiscardedOrder> discardedOrders) {
+    public void viewDiscardedOrders(List<Order> discardedOrders) {
         for(int i = 0; i < discardedOrders.size(); i++) {
-            DiscardedOrder discardedOrder = discardedOrders.get(i);
+            Order discardedOrder = discardedOrders.get(i);
             System.out.printf("Order %d:\n", i + 1);
 
             showAllOrderItems(discardedOrder.getOrderItems());

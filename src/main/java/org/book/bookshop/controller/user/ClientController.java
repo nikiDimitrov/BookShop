@@ -1,7 +1,6 @@
 package org.book.bookshop.controller.user;
 import org.book.bookshop.exceptions.NoBooksException;
-import org.book.bookshop.exceptions.NoActiveOrdersException;
-import org.book.bookshop.exceptions.NoDiscardedOrdersException;
+import org.book.bookshop.exceptions.NoOrdersException;
 import org.book.bookshop.model.*;
 import org.book.bookshop.service.*;
 import org.book.bookshop.view.user.ClientView;
@@ -67,25 +66,25 @@ public class ClientController extends UserController {
     public void viewOrders() {
         try {
             view.startingDisplayActiveOrders();
-            List<Order> orders = orderService.findOrdersByUser(user);
+            List<Order> orders = orderService.findOrders(user, "active");
             view.viewOrders(orders);
         }
-        catch (NoActiveOrdersException e) {
+        catch (NoOrdersException e) {
             view.displayError(e.getMessage());
         }
 
         try {
             view.startingDisplayDiscardedOrders();
-            List<DiscardedOrder> discardedOrders = orderService.findDiscardedOrdersByUser(user);
+            List<Order> discardedOrders = orderService.findOrders(user, "discarded");
             view.viewDiscardedOrders(discardedOrders);
 
             if(!discardedOrders.isEmpty()) {
-                orderService.deleteDiscardedOrders(discardedOrders);
+                orderService.deleteOrders(discardedOrders);
                 view.displaySuccessfullyDeletedDiscardedOrders();
             }
 
         }
-        catch (NoDiscardedOrdersException e) {
+        catch (NoOrdersException e) {
             view.displayError(e.getMessage());
         }
     }

@@ -100,20 +100,19 @@ public class EmployeeController extends UserController {
 
     private void approveOrder(Order order) {
         view.startApprovingOrder();
-        Receipt receipt = orderService.approveOrder(order);
+        Order approvedOrder = orderService.changeOrderStatus(order, "approved");
 
-        if(receipt != null) {
-            for(OrderItem item : receipt.getOrderItems()) {
+        if(approvedOrder != null) {
+            for(OrderItem item : approvedOrder.getOrderItems()) {
                 bookService.updateBookQuantity(item);
             }
             view.finishedApprovingOrder();
         }
-
     }
 
     private void discardOrder(Order order) {
         view.startDiscardingOrder();
-        DiscardedOrder discardedOrder = orderService.discardOrder(order);
+        Order discardedOrder = orderService.changeOrderStatus(order, "discarded");
 
         if(discardedOrder != null) {
             view.finishDiscardingOrder();

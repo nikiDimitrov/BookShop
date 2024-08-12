@@ -27,8 +27,12 @@ public class Order {
 
     private double totalPrice;
 
+    @NotNull
+    private String status;
+
     public Order(User user, List<OrderItem> orderItems) {
         this.user = user;
         this.orderItems = orderItems;
+        this.status = "active";
     }
 }
