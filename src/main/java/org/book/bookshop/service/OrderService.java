@@ -7,7 +7,6 @@ import org.book.bookshop.repository.OrderItemRepository;
 import org.book.bookshop.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor

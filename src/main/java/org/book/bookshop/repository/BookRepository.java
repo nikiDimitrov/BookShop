@@ -2,7 +2,6 @@ package org.book.bookshop.repository;
 
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
-import org.book.bookshop.model.Order;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
