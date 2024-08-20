@@ -54,7 +54,9 @@ public class EmployeeController extends UserController {
         }
 
         for(Order order : orders) {
-            String answer = view.askForApprovalOfOrder(order);
+            List<OrderItem> orderItems = orderItemService.findByOrder(order);
+
+            String answer = view.askForApprovalOfOrder(order, orderItems);
             switch(answer.toLowerCase()) {
                 case "y" -> approveOrder(order);
                 case "n" -> discardOrder(order);
@@ -103,7 +105,7 @@ public class EmployeeController extends UserController {
         Order approvedOrder = orderService.changeOrderStatus(order, "approved");
 
         if(approvedOrder != null) {
-            for(OrderItem item : approvedOrder.getOrderItems()) {
+            for(OrderItem item : orderItemService.findByOrder(approvedOrder)) {
                 bookService.updateBookQuantity(item);
             }
             view.finishedApprovingOrder();

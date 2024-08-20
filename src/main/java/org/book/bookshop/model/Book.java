@@ -29,7 +29,7 @@ public class Book {
     @Positive(message = "Price should be more than zero!")
     private double price;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany
     private List<Category> categories;
 
     @Positive(message = "Year should be a positive number!")
@@ -38,7 +38,7 @@ public class Book {
     @Positive(message = "Quantity should be more than zero!")
     private int quantity;
 
-    public Book(String name, String author, double price, List<Category> categories, int year, int quantity) {
+    public Book( String name, String author, double price, List<Category> categories, int year, int quantity) {
         this.name = name;
         this.author = author;
         this.price = price;

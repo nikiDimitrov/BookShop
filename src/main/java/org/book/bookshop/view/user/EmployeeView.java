@@ -2,6 +2,7 @@ package org.book.bookshop.view.user;
 
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Order;
+import org.book.bookshop.model.OrderItem;
 import org.book.bookshop.showers.EmployeeOptionsShower;
 import org.springframework.stereotype.Component;
 
@@ -20,10 +21,10 @@ public class EmployeeView extends UserView {
         return scanner.nextLine();
     }
 
-    public String askForApprovalOfOrder(Order order) {
+    public String askForApprovalOfOrder(Order order, List<OrderItem> orderItems) {
         System.out.printf("Order by %s:\n\n", order.getUser().getUsername());
 
-        showAllOrderItems(order.getOrderItems());
+        showAllOrderItems(orderItems);
 
         System.out.println("Do you approve this order? Y\\N");
 

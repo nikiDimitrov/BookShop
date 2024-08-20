@@ -11,7 +11,9 @@ import org.book.bookshop.view.user.LoginView;
 import org.springframework.stereotype.Controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class AdminController extends UserController {
@@ -151,7 +153,15 @@ public class AdminController extends UserController {
     public void showAllOrders() {
         try {
             List<Order> orders = orderService.findAllOrders();
-            view.showAllOrders(orders);
+
+            Map<Order, List<OrderItem>> ordersWithItems = new HashMap<>();
+
+            for(Order order : orders) {
+                List<OrderItem> orderItems = orderItemService.findByOrder(order);
+                ordersWithItems.put(order, orderItems);
+            }
+
+            view.showAllOrders(ordersWithItems);
         }
         catch (NoOrdersException e) {
             view.displayError("No orders found!");

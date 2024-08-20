@@ -5,6 +5,7 @@ import org.book.bookshop.showers.ClientOptionsShower;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 @Component
@@ -39,25 +40,29 @@ public class ClientView extends UserView {
         return scanner.nextLine().trim();
     }
 
-    public void viewOrders(List<Order> orders) {
-        for(int i = 0; i < orders.size(); i++) {
-            Order order = orders.get(i);
-            System.out.printf("Order %d:\n", i + 1);
+    public void viewOrders(Map<Order, List<OrderItem>> ordersWithItems) {
+        int number = 1;
+        for(Map.Entry<Order, List<OrderItem>> entrySet : ordersWithItems.entrySet()) {
+            Order order = entrySet.getKey();
+            List<OrderItem> orderItems = entrySet.getValue();
 
-            showAllOrderItems(order.getOrderItems());
+            System.out.printf("Order %d:\n", number++);
 
-            System.out.printf("Price of order is: %.2f lv.\n", order.getTotalPrice());
+            showAllOrderItems(orderItems);
         }
 
         System.out.println("\nAll of these orders await an employee's approval!");
     }
 
-    public void viewDiscardedOrders(List<Order> discardedOrders) {
-        for(int i = 0; i < discardedOrders.size(); i++) {
-            Order discardedOrder = discardedOrders.get(i);
-            System.out.printf("Order %d:\n", i + 1);
+    public void viewDiscardedOrders(Map<Order, List<OrderItem>> discardedOrdersWithItems) {
+        int number = 0;
+        for (Map.Entry<Order, List<OrderItem>> entry : discardedOrdersWithItems.entrySet()) {
+            Order discardedOrder = entry.getKey();
+            List<OrderItem> orderItems = entry.getValue();
 
-            showAllOrderItems(discardedOrder.getOrderItems());
+            System.out.printf("Order %d:\n", number++);
+
+            showAllOrderItems(orderItems);
 
             System.out.printf("Price of order is: %.2f lv.\n\n", discardedOrder.getTotalPrice());
         }

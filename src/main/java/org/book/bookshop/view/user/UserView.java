@@ -43,13 +43,19 @@ public class UserView {
     }
 
     public void showAllOrderItems(List<OrderItem> orderItems) {
+        double totalPrice = 0;
         AtomicInteger index = new AtomicInteger(1);
-        orderItems.forEach(orderItem -> {
+
+        for(OrderItem orderItem : orderItems) {
             Book orderedBook = orderItem.getBook();
 
             System.out.printf("%d. %s by %s, %d, %.2f lv, %d units ordered\n", index.getAndIncrement(), orderedBook.getName(),
                     orderedBook.getAuthor(), orderedBook.getYear(), orderedBook.getPrice(), orderItem.getQuantity());
-        });
+
+            totalPrice += orderItem.getQuantity() * orderedBook.getPrice();
+        }
+
+        System.out.printf("Total price is: %.2f lv.\n", totalPrice);
     }
 
     public void displayError(String errorMessage) {

@@ -67,18 +67,35 @@ public class ClientController extends UserController {
         try {
             view.startingDisplayActiveOrders();
             List<Order> orders = orderService.findOrders(user, "active");
-            view.viewOrders(orders);
+
+            Map<Order, List<OrderItem>> ordersWithItems = new HashMap<>();
+
+            for(Order order : orders) {
+                List<OrderItem> orderItems = orderItemService.findByOrder(order);
+
+                ordersWithItems.put(order, orderItems);
+            }
+
+            view.viewOrders(ordersWithItems);
         }
         catch (NoOrdersException e) {
             view.displayError(e.getMessage());
         }
 
         try {
+            Map<Order, List<OrderItem>> discardedOrdersWithItems = new HashMap<>();
+
             view.startingDisplayDiscardedOrders();
             List<Order> discardedOrders = orderService.findOrders(user, "discarded");
-            view.viewDiscardedOrders(discardedOrders);
 
-            if(!discardedOrders.isEmpty()) {
+            for(Order discardedOrder : discardedOrders) {
+                List<OrderItem> orderItems = orderItemService.findByOrder(discardedOrder);
+                discardedOrdersWithItems.put(discardedOrder, orderItems);
+            }
+
+            view.viewDiscardedOrders(discardedOrdersWithItems);
+
+            if(!discardedOrdersWithItems.isEmpty()) {
                 orderService.deleteOrders(discardedOrders);
                 view.displaySuccessfullyDeletedDiscardedOrders();
             }
@@ -141,18 +158,17 @@ public class ClientController extends UserController {
     }
 
     private void processOrder(Map<Book, Integer> booksWithQuantities) {
+        List<OrderItem> orderItems = new ArrayList<>();
         view.orderingBooks();
 
         Order order = orderService.save(user);
-        List<OrderItem> orderItems = new ArrayList<>();
         
         for (Map.Entry<Book, Integer> entry : booksWithQuantities.entrySet()) {
             OrderItem orderItem = new OrderItem(order, entry.getKey(), entry.getValue());
-            orderItems.add(orderItemService.saveOrderItem(orderItem));
+            orderItems.add(orderItem);
         }
-        
-        order.setOrderItems(orderItems);
-        Order result = orderService.makeOrder(order);
+
+        Order result = orderService.makeOrder(order, orderItems);
 
         if (result == null) {
             view.displayError("Order cannot be made!");

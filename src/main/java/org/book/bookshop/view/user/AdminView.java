@@ -7,6 +7,7 @@ import org.book.bookshop.model.Order;
 import org.book.bookshop.model.User;
 import org.springframework.stereotype.Component;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -61,8 +62,8 @@ public class AdminView extends UserView {
         return scanner.nextLine().trim();
     }
 
-    public void showAllOrders(List<Order> orders) {
-        if(orders.isEmpty()) {
+    public void showAllOrders(Map<Order, List<OrderItem>> ordersWithItems) {
+        if(ordersWithItems.isEmpty()) {
             System.out.println("No orders found!");
         }
 
@@ -70,9 +71,9 @@ public class AdminView extends UserView {
             System.out.println("All of the pending orders in the system are:\n");
 
             AtomicInteger index = new AtomicInteger(1);
-            orders.forEach(order -> {
+            ordersWithItems.forEach((order, orderItems) -> {
                 System.out.printf("Order %d by %s:\n", index.getAndIncrement(), order.getUser().getUsername());
-                showAllBooks(order.getOrderItems().stream().map(OrderItem::getBook).toList(), false);
+                showAllBooks(orderItems.stream().map(OrderItem::getBook).toList(), false);
                 System.out.printf("Price of this order is: %.2f lv.\n\n", order.getTotalPrice());
             });
         }

@@ -25,7 +25,7 @@ public class OrderService {
         List<Order> orders = orderRepository.findByUserAndStatus(user, status);
 
         if(orders.isEmpty()) {
-            throw new NoOrdersException("No active orders found!");
+            throw new NoOrdersException("No orders found!");
         }
         else {
             return orders;
@@ -33,30 +33,32 @@ public class OrderService {
     }
 
     public Order save(User user) {
-        return orderRepository.save(new Order(user, new ArrayList<>()));
+        return orderRepository.save(new Order(user));
     }
 
-    public Order makeOrder(Order order) {
-
-        double totalPrice = order.getOrderItems()
+    public Order makeOrder(Order order, List<OrderItem> orderItems) {
+        double totalPrice = orderItems
                 .stream()
                 .mapToDouble(o -> o.getBook().getPrice() * o.getQuantity())
                 .sum();
-        order.setTotalPrice(totalPrice);
 
-        return orderRepository.save(order);
+        for(OrderItem orderItem : orderItems) {
+            orderItemRepository.save(orderItem);
+        }
+
+        return orderRepository.updateTotalPrice(order, totalPrice);
     }
 
     public Order changeOrderStatus(Order order, String newStatus) {
         order.setStatus(newStatus);
 
-        return orderRepository.save(order);
+        return orderRepository.updateStatus(order, newStatus);
     }
 
     public void deleteOrders(List<Order> orders) {
         for(Order order : orders) {
-            List<OrderItem> orderItems = order.getOrderItems();
-            orderItemRepository.deleteAllInBatch(orderItems);
+            List<OrderItem> orderItems = orderItemRepository.findByOrderId(order.getId());
+            orderItemRepository.deleteInBatch(orderItems);
         }
         orderRepository.deleteAllInBatch(orders);
     }
