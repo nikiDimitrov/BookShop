@@ -8,6 +8,7 @@ import org.book.bookshop.view.user.LoginView;
 import org.springframework.stereotype.Controller;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @Controller
 public class ClientController extends UserController {
@@ -56,6 +57,7 @@ public class ClientController extends UserController {
             if (!booksWithQuantities.isEmpty() && confirmOrder(booksWithQuantities)) {
                 processOrder(booksWithQuantities);
             }
+
         } catch (NoBooksException e) {
             view.displayError(e.getMessage());
         } catch (RuntimeException e) {
@@ -66,7 +68,7 @@ public class ClientController extends UserController {
     public void viewOrders() {
         try {
             view.startingDisplayActiveOrders();
-            List<Order> orders = orderService.findOrders(user, "active");
+            List<Order> orders = orderService.findOrdersByUserAndStatus(user, "active");
 
             Map<Order, List<OrderItem>> ordersWithItems = new HashMap<>();
 
@@ -76,7 +78,7 @@ public class ClientController extends UserController {
                 ordersWithItems.put(order, orderItems);
             }
 
-            view.viewOrders(ordersWithItems);
+            view.viewActiveOrders(ordersWithItems);
         }
         catch (NoOrdersException e) {
             view.displayError(e.getMessage());
@@ -86,7 +88,7 @@ public class ClientController extends UserController {
             Map<Order, List<OrderItem>> discardedOrdersWithItems = new HashMap<>();
 
             view.startingDisplayDiscardedOrders();
-            List<Order> discardedOrders = orderService.findOrders(user, "discarded");
+            List<Order> discardedOrders = orderService.findOrdersByUserAndStatus(user, "discarded");
 
             for(Order discardedOrder : discardedOrders) {
                 List<OrderItem> orderItems = orderItemService.findByOrder(discardedOrder);
@@ -96,7 +98,10 @@ public class ClientController extends UserController {
             view.viewDiscardedOrders(discardedOrdersWithItems);
 
             if(!discardedOrdersWithItems.isEmpty()) {
-                orderService.deleteOrders(discardedOrders);
+                CompletableFuture.runAsync(() -> {
+                    orderService.deleteOrders(discardedOrders);
+                });
+
                 view.displaySuccessfullyDeletedDiscardedOrders();
             }
 
@@ -139,6 +144,7 @@ public class ClientController extends UserController {
             }
 
             int quantity = quantities[i];
+
             if (quantity <= book.getQuantity()) {
                 booksWithQuantities.put(book, quantity);
             } else {

@@ -2,6 +2,7 @@ package org.book.bookshop.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.book.bookshop.model.Order;
+import org.book.bookshop.model.Role;
 import org.book.bookshop.model.User;
 import org.springframework.stereotype.Repository;
 
@@ -14,16 +15,18 @@ import java.util.UUID;
 @Repository
 @RequiredArgsConstructor
 public class OrderRepository {
-    private final UserRepository userRepository;
-
     private String url = "jdbc:postgresql://localhost:5432/bookshop?stringtype=unspecified";
     private String username = "postgres";
     private String password = System.getenv("DB_PASSWORD");
+    private String sqlSelect ="SELECT o.id AS order_id, o.user_id AS order_user_id, o.total_price AS order_total_price, o.status AS order_status, " +
+            "u.id AS user_id, u.username AS user_username, u.email AS user_email, u.password AS user_password, u.role AS user_role FROM orders AS o" +
+            " JOIN users AS u ON o.user_id = u.id ";
 
     public List<Order> findByUserAndStatus(User user, String status) {
         List<Order> orders = new ArrayList<>();
 
-        String sql = "SELECT * FROM orders WHERE user_id = ? AND status = ?";
+        String sql = sqlSelect +
+                "WHERE o.user_id = ? AND o.status = ?";
 
         try (Connection connection = DriverManager.getConnection(url, username, password);
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -46,7 +49,8 @@ public class OrderRepository {
     }
 
     public Optional<Order> findById(UUID id) {
-        String sql = "SELECT * FROM orders WHERE id = ?";
+        String sql = sqlSelect +
+                "WHERE o.id = ?";
 
         try(Connection connection = DriverManager.getConnection(url, username, password);
             PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -68,10 +72,35 @@ public class OrderRepository {
         return Optional.empty();
     }
 
+    public List<Order> findByStatus(String status) {
+        List<Order> orders = new ArrayList<>();
+
+        String sql = sqlSelect +
+                "WHERE o.status = ?";
+
+        try (Connection connection = DriverManager.getConnection(url, username, password);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, status);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            while(resultSet.next()) {
+                Order order = mapResultSetToOrder(resultSet);
+                orders.add(order);
+            }
+        }
+        catch(SQLException e) {
+            e.printStackTrace();
+        }
+
+        return orders;
+    }
+
     public List<Order> findAll() {
         List<Order> orders = new ArrayList<>();
 
-        String sql = "SELECT * FROM orders";
+        String sql = sqlSelect;
 
         try(Connection connection = DriverManager.getConnection(url, username, password);
             PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -176,15 +205,23 @@ public class OrderRepository {
     }
 
     private Order mapResultSetToOrder(ResultSet resultSet) throws SQLException {
-        UUID id = (UUID) resultSet.getObject("id");
-        UUID user_id = (UUID) resultSet.getObject("user_id");
-        double totalPrice = resultSet.getDouble("total_price");
-        String status = resultSet.getString("status");
+        UUID orderId = (UUID) resultSet.getObject("order_id");
+        UUID userId = (UUID) resultSet.getObject("user_id");
+        double totalPrice = resultSet.getDouble("order_total_price");
+        String status = resultSet.getString("order_status");
 
-        User user = userRepository.findById(user_id).orElse(null);
+        String username = resultSet.getString("user_username");
+        String email = resultSet.getString("user_email");
+        String password = resultSet.getString("user_password");
+        Role role = Role.valueOf(resultSet.getString("user_role"));
+
+        User user = new User(username, email, password);
+        user.setId(userId);
+        user.setRole(role);
+
         Order order = new Order(user);
 
-        order.setId(id);
+        order.setId(orderId);
         order.setTotalPrice(totalPrice);
         order.setStatus(status);
 

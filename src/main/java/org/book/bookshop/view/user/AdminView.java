@@ -74,7 +74,8 @@ public class AdminView extends UserView {
             ordersWithItems.forEach((order, orderItems) -> {
                 System.out.printf("Order %d by %s:\n", index.getAndIncrement(), order.getUser().getUsername());
                 showAllBooks(orderItems.stream().map(OrderItem::getBook).toList(), false);
-                System.out.printf("Price of this order is: %.2f lv.\n\n", order.getTotalPrice());
+                System.out.printf("Price of this order is: %.2f lv.\n", order.getTotalPrice());
+                System.out.printf("Status is: %s\n\n", order.getStatus());
             });
         }
 

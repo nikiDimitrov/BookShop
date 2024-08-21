@@ -5,10 +5,7 @@ import org.book.bookshop.model.Category;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Repository
 public class BookRepository {
@@ -17,20 +14,37 @@ public class BookRepository {
     private final String user = "postgres";
     private final String password = System.getenv("DB_PASSWORD");
 
-
     public List<Book> findAll() {
         List<Book> books = new ArrayList<>();
+        Map<UUID, List<Category>> bookCategoriesMap = new HashMap<>();
 
-        String sql = "SELECT * FROM books";
+        String bookSql = "SELECT * FROM books";
+        String categorySql = "SELECT bc.book_id, c.* FROM books_categories AS bc " +
+                "JOIN categories as c ON bc.categories_id = c.id where bc.book_id IN (SELECT id FROM books)";
 
         try(Connection connection = DriverManager.getConnection(url, user, password);
-            PreparedStatement statement = connection.prepareStatement(sql)){
+            PreparedStatement bookStatement = connection.prepareStatement(bookSql);
+            PreparedStatement categoryStatement = connection.prepareStatement(categorySql);
+            ResultSet bookResultSet = bookStatement.executeQuery();
+            ResultSet categoryResultSet = categoryStatement.executeQuery()){
 
-            ResultSet resultSet = statement.executeQuery();
-
-            while(resultSet.next()) {
-                Book book = mapResultSetToBook(resultSet, connection);
+            while (bookResultSet.next()) {
+                Book book = mapResultSetToBook(bookResultSet);
                 books.add(book);
+            }
+
+            while (categoryResultSet.next()) {
+                UUID bookId = (UUID) categoryResultSet.getObject("book_id");
+                UUID categoryId = (UUID) categoryResultSet.getObject("id");
+                String categoryName = categoryResultSet.getString("name");
+                Category category = new Category(categoryName);
+                category.setId(categoryId);
+
+                bookCategoriesMap.computeIfAbsent(bookId, k-> new ArrayList<>()).add(category);
+            }
+
+            for (Book book : books) {
+                book.setCategories(bookCategoriesMap.getOrDefault(book.getId(), new ArrayList<>()));
             }
         }
         catch (SQLException e) {
@@ -44,15 +58,14 @@ public class BookRepository {
         String sql = "SELECT * FROM books WHERE id = ?";
 
         try(Connection connection = DriverManager.getConnection(url, user, password);
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+            PreparedStatement statement = connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();) {
 
             statement.setObject(1, bookId);
 
-            ResultSet resultSet = statement.executeQuery();
-
             if(resultSet.next()){
-                Book book = mapResultSetToBook(resultSet, connection);
-
+                Book book = mapResultSetToBook(resultSet);
+                getCategoriesForBook(book);
                 return Optional.of(book);
             }
         }
@@ -119,41 +132,47 @@ public class BookRepository {
         }
     }
 
-    private Book mapResultSetToBook(ResultSet resultSet, Connection connection) throws SQLException {
+    private Book mapResultSetToBook(ResultSet resultSet) throws SQLException {
         UUID bookId = (UUID) resultSet.getObject("id");
         String name = resultSet.getString("name");
         String author = resultSet.getString("author");
         double price = resultSet.getDouble("price");
-        List<Category> categories = fetchCategoriesForBook(bookId, connection);
         int year = resultSet.getInt("year");
         int quantity = resultSet.getInt("quantity");
 
-        Book book = new Book(name, author, price, categories, year, quantity);
+        Book book = new Book(name, author, price, new ArrayList<>(), year, quantity);
         book.setId(bookId);
 
         return book;
     }
 
-    private List<Category> fetchCategoriesForBook(UUID bookId, Connection connection) throws SQLException {
+    private void getCategoriesForBook(Book book) {
         List<Category> categories = new ArrayList<>();
 
-        String sql = "SELECT c.id, c.name FROM categories c " +
-                "JOIN books_categories bc ON c.id = bc.categories_id " +
-                "WHERE bc.book_id = ?";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setObject(1, bookId);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    UUID categoryId = (UUID) resultSet.getObject("id");
-                    String categoryName = resultSet.getString("name");
-                    Category category = new Category(categoryName);
-                    category.setId(categoryId);
-                    categories.add(category);
-                }
+        String sql = "SELECT bc.book_id, c.* FROM books_categories AS bc" +
+                " JOIN categories as c ON bc.categories_id = c.id WHERE bc.book_id = ?";
+
+        try(Connection connection = DriverManager.getConnection(url, user, password);
+            PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setObject(1, book.getId());
+
+            ResultSet categoryResultSet = statement.executeQuery();
+
+            while (categoryResultSet.next()) {
+                UUID categoryId = (UUID) categoryResultSet.getObject("id");
+                String categoryName = categoryResultSet.getString("name");
+                Category category = new Category(categoryName);
+                category.setId(categoryId);
+
+                categories.add(category);
             }
         }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
 
-        return categories;
+        book.setCategories(categories);
     }
 
 }

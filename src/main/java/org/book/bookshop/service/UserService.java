@@ -41,7 +41,6 @@ public class UserService {
         String encodedPassword = encoder.encode(password);
         user.setPassword(encodedPassword);
 
-        // admin creation is unsecure
         if(userRepository.findAll().isEmpty()) {
             user.setRole(Role.ADMIN);
         }

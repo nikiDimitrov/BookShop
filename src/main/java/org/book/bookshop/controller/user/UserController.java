@@ -32,6 +32,7 @@ public abstract class UserController {
 
     protected List<Book> getAllBooks() throws NoBooksException {
         List<Book> books = bookService.findAllBooks();
+
         return books.stream()
                 .sorted(Comparator.comparing(Book::getName))
                 .toList();

@@ -87,11 +87,14 @@ public class AdminController extends UserController {
 
         Book book = null;
 
-        try {
-            book = bookService.saveBook(name, author, price, chosenCategories, year, quantity);
-        }
-        catch (IllegalArgumentException e) {
-            view.displayError(e.getMessage());
+        synchronized(this) {
+            try {
+                book = bookService.saveBook(name, author, price, chosenCategories, year, quantity);
+            }
+            catch (IllegalArgumentException e) {
+                view.displayError(e.getMessage());
+            }
+
         }
 
         if(book == null) {
@@ -109,14 +112,16 @@ public class AdminController extends UserController {
             books = getAllBooks();
             String argument = view.removeBook(books);
 
-            try {
-                int index = Integer.parseInt(argument);
+            synchronized(this) {
+                try {
+                    int index = Integer.parseInt(argument);
 
-                bookService.deleteBook(books.get(index - 1));
-                view.displayDeletingBookSuccess();
-            }
-            catch(RuntimeException e) {
-                view.displayError("Incorrect argument!");
+                    bookService.deleteBook(books.get(index - 1));
+                    view.displayDeletingBookSuccess();
+                }
+                catch(RuntimeException e) {
+                    view.displayError("Incorrect argument!");
+                }
             }
         }
         catch (NoBooksException e) {

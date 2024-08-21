@@ -20,8 +20,19 @@ public class OrderService {
         return orderRepository.findAll();
     }
 
-    public List<Order> findOrders(User user, String status) throws NoOrdersException {
+    public List<Order> findOrdersByUserAndStatus(User user, String status) throws NoOrdersException {
         List<Order> orders = orderRepository.findByUserAndStatus(user, status);
+
+        if(orders.isEmpty()) {
+            throw new NoOrdersException("No orders found!");
+        }
+        else {
+            return orders;
+        }
+    }
+
+    public List<Order> findOrdersByStatus(String status) throws NoOrdersException {
+        List<Order> orders = orderRepository.findByStatus(status);
 
         if(orders.isEmpty()) {
             throw new NoOrdersException("No orders found!");
@@ -59,6 +70,7 @@ public class OrderService {
             List<OrderItem> orderItems = orderItemRepository.findByOrderId(order.getId());
             orderItemRepository.deleteInBatch(orderItems);
         }
+
         orderRepository.deleteAllInBatch(orders);
     }
 }

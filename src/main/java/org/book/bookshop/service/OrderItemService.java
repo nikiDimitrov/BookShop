@@ -14,10 +14,6 @@ public class OrderItemService {
 
     private final OrderItemRepository orderItemRepository;
 
-    public OrderItem saveOrderItem(OrderItem orderItem) {
-        return orderItemRepository.save(orderItem);
-    }
-
     public List<OrderItem> findByOrder(Order order) {
         return orderItemRepository.findByOrderId(order.getId());
     }

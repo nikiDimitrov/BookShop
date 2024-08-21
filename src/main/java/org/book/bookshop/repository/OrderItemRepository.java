@@ -1,8 +1,6 @@
 package org.book.bookshop.repository;
 import lombok.RequiredArgsConstructor;
-import org.book.bookshop.model.Book;
-import org.book.bookshop.model.Order;
-import org.book.bookshop.model.OrderItem;
+import org.book.bookshop.model.*;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
@@ -15,15 +13,23 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderItemRepository {
 
-    private final BookRepository bookRepository;
-    private final OrderRepository orderRepository;
-
     private String url = "jdbc:postgresql://localhost:5432/bookshop?stringtype=unspecified";
     private String user = "postgres";
     private String password = System.getenv("DB_PASSWORD");
+    private String sqlSelect = "SELECT oi.id AS order_item_id, oi.quantity AS order_item_quantity, " +
+            "o.id AS order_id, o.total_price AS order_total_price, o.status AS order_status, " +
+            "b.id AS book_id, b.name AS book_name, b.author AS book_author, b.price AS book_price, b.year AS book_year, b.quantity as book_quantity, " +
+            " u.id AS user_id, u.username AS user_username, u.email AS user_email, u.password AS user_password, u.role AS user_role, " +
+            "c.id AS category_id, c.name AS category_name FROM order_items as oi " +
+            "JOIN orders as o on oi.order_id = o.id " +
+            "JOIN books as b on oi.book_id = b.id " +
+            "JOIN users as u on o.user_id = u.id " +
+            "JOIN books_categories as bc on bc.book_id = b.id " +
+            "JOIN categories as c on c.id = bc.categories_id";
 
     public Optional<OrderItem> findById(UUID id) {
-        String sql = "SELECT * FROM order_items WHERE id = ?";
+        String sql = sqlSelect +
+                " WHERE oi.id = ?";
 
         try(Connection connection = DriverManager.getConnection(url, user, password);
             PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -47,7 +53,7 @@ public class OrderItemRepository {
     public List<OrderItem> findByOrderId(UUID orderId) {
         List<OrderItem> orderItems = new ArrayList<>();
 
-        String sql = "SELECT * FROM order_items WHERE order_id = ?";
+        String sql = sqlSelect + " WHERE order_id = ?";
 
         try(Connection connection = DriverManager.getConnection(url, user, password);
             PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -113,17 +119,53 @@ public class OrderItemRepository {
     }
 
     private OrderItem mapResultSetToOrderItem(ResultSet resultSet) throws SQLException {
-        UUID id = (UUID) resultSet.getObject("id");
-        UUID book_id = (UUID) resultSet.getObject("book_id");
-        UUID order_id = (UUID) resultSet.getObject("order_id");
-        int quantity = resultSet.getInt("quantity");
+        UUID orderItemId = (UUID) resultSet.getObject("order_item_id");
+        UUID bookId = (UUID) resultSet.getObject("book_id");
+        UUID orderId = (UUID) resultSet.getObject("order_id");
+        int orderItemQuantity = resultSet.getInt("order_item_quantity");
 
-        Book book = bookRepository.findById(book_id).stream().findFirst().orElse(null);
-        Order order = orderRepository.findById(order_id).stream().findFirst().orElse(null);
+        String author = resultSet.getString("book_author");
+        String name = resultSet.getString("book_name");
+        double price = resultSet.getDouble("book_price");
+        int bookQuantity = resultSet.getInt("book_quantity");
+        int year = resultSet.getInt("book_year");
 
-        OrderItem orderItem = new OrderItem(order, book, quantity);
-        orderItem.setId(id);
+        UUID userId = (UUID) resultSet.getObject("user_id");
+        String status = resultSet.getString("order_status");
+        double orderPrice = resultSet.getDouble("order_total_price");
+
+        String email = resultSet.getString("user_email");
+        String username = resultSet.getString("user_username");
+        String password = resultSet.getString("user_password");
+        Role role = Role.valueOf(resultSet.getString("user_role"));
+
+        User user = new User(username, email, password);
+        user.setId(userId);
+        user.setRole(role);
+
+        Order order = new Order(user);
+        order.setId(orderId);
+        order.setStatus(status);
+        order.setTotalPrice(orderPrice);
+
+        Book book = new Book(name, author, price, new ArrayList<>(), year, bookQuantity);
+        book.setId(bookId);
+
+        List<Category> categories = new ArrayList<>();
+        do {
+            UUID categoryId = (UUID) resultSet.getObject("category_id");
+            String categoryName = resultSet.getString("category_name");
+            Category category = new Category(categoryName);
+            category.setId(categoryId);
+            categories.add(category);
+        } while (resultSet.next() && resultSet.getObject("order_item_id").equals(orderItemId));
+
+        book.setCategories(categories);
+
+        OrderItem orderItem = new OrderItem(order, book, orderItemQuantity);
+        orderItem.setId(orderItemId);
 
         return orderItem;
     }
+
 }

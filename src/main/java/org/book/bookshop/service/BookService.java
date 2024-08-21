@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor
 @Service
@@ -47,7 +48,10 @@ public class BookService {
 
         if(savedBook != null) {
             savedBook.setCategories(categories);
-            booksCategoriesRepository.joinBookAndCategories(savedBook);
+
+            CompletableFuture.runAsync(() -> {
+                booksCategoriesRepository.joinBookAndCategories(savedBook);
+            });
         }
 
         return savedBook;
@@ -68,8 +72,19 @@ public class BookService {
 
     public void deleteBook(Book book) {
         booksCategoriesRepository.deleteBookAndCategories(book);
-        categoryRepository.deleteBatch(book.getCategories());
-        bookRepository.delete(book);
+
+        CompletableFuture<Void> deleteCategories = CompletableFuture.runAsync(
+                () -> categoryRepository.deleteBatch(book.getCategories()));
+
+        CompletableFuture<Void> deleteBook = CompletableFuture.runAsync(
+                () -> bookRepository.delete(book));
+
+        CompletableFuture<Void> allDeletes = CompletableFuture.allOf(deleteCategories, deleteBook);
+
+        allDeletes.exceptionally(ex -> {
+            System.err.println("An error occurred during deletion: " + ex.getMessage());
+            return null;
+        });
     }
 
 }

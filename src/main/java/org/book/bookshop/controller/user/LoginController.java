@@ -16,7 +16,6 @@ public class LoginController {
 
     private final UserService service;
     private final LoginView view;
-    private static final Object lock = new Object();
 
     private User currentUser;
 
@@ -39,7 +38,7 @@ public class LoginController {
         String email = registerDetails[1];
         String password = registerDetails[2];
 
-        synchronized (lock) {
+        synchronized (this) {
             try {
                 currentUser = service.registerUser(username, email, password, Role.CLIENT);
                 view.displayRegistrationSuccess();
@@ -55,7 +54,7 @@ public class LoginController {
         String username = loginDetails[0];
         String password = loginDetails[1];
 
-        synchronized (lock) {
+        synchronized (this) {
             try {
                 currentUser = service.loginUser(username, password);
                 view.displayLoginSuccess();

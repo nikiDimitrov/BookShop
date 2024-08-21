@@ -14,7 +14,6 @@ public class EmployeeController extends UserController {
 
     private final EmployeeView view;
 
-    // to be simplified
     public EmployeeController(BookService bookService, LoginView loginView, UserService service, CategoryService categoryService, EmployeeView employeeView, OrderItemService orderItemService, OrderService orderService) {
         super(bookService, loginView, service, orderService, categoryService, orderItemService);
         this.view = employeeView;
@@ -47,7 +46,7 @@ public class EmployeeController extends UserController {
     public void approveOrders() {
         view.startApprovingOrders();
 
-        List<Order> orders = orderService.findAllOrders();
+        List<Order> orders = orderService.findOrdersByStatus("active");
         if(orders.isEmpty()) {
             view.noOrdersFound();
             return;
@@ -102,31 +101,37 @@ public class EmployeeController extends UserController {
 
     private void approveOrder(Order order) {
         view.startApprovingOrder();
-        Order approvedOrder = orderService.changeOrderStatus(order, "approved");
 
-        if(approvedOrder != null) {
-            for(OrderItem item : orderItemService.findByOrder(approvedOrder)) {
-                bookService.updateBookQuantity(item);
+        synchronized (this) {
+            Order approvedOrder = orderService.changeOrderStatus(order, "approved");
+            if(approvedOrder != null) {
+                for(OrderItem item : orderItemService.findByOrder(approvedOrder)) {
+                    bookService.updateBookQuantity(item);
+                }
+                view.finishedApprovingOrder();
             }
-            view.finishedApprovingOrder();
         }
     }
 
     private void discardOrder(Order order) {
-        view.startDiscardingOrder();
-        Order discardedOrder = orderService.changeOrderStatus(order, "discarded");
+        synchronized (this) {
+            view.startDiscardingOrder();
+            Order discardedOrder = orderService.changeOrderStatus(order, "discarded");
 
-        if(discardedOrder != null) {
-            view.finishDiscardingOrder();
+            if(discardedOrder != null) {
+                view.finishDiscardingOrder();
+            }
         }
     }
 
     private void processRestocking(Map<Book, Integer> booksWithAddedQuantities) {
-        for(Map.Entry<Book, Integer> entry : booksWithAddedQuantities.entrySet()) {
-            Book bookToRestock = entry.getKey();
-            int quantityToAdd = entry.getValue();
+        synchronized (this) {
+            for(Map.Entry<Book, Integer> entry : booksWithAddedQuantities.entrySet()) {
+                Book bookToRestock = entry.getKey();
+                int quantityToAdd = entry.getValue();
 
-            bookService.restockBook(bookToRestock, quantityToAdd);
+                bookService.restockBook(bookToRestock, quantityToAdd);
+            }
         }
     }
 
@@ -161,6 +166,7 @@ public class EmployeeController extends UserController {
             }
 
             int quantity = quantities[i];
+
             if(quantity <= 0) {
                 view.displayNegativeQuantityError();
                 return Collections.emptyMap();

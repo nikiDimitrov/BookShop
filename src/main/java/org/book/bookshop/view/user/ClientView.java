@@ -40,36 +40,28 @@ public class ClientView extends UserView {
         return scanner.nextLine().trim();
     }
 
-    public void viewOrders(Map<Order, List<OrderItem>> ordersWithItems) {
+    private void viewOrders(Map<Order, List<OrderItem>> ordersWithItems) {
         int number = 1;
         for(Map.Entry<Order, List<OrderItem>> entrySet : ordersWithItems.entrySet()) {
-            Order order = entrySet.getKey();
             List<OrderItem> orderItems = entrySet.getValue();
 
             System.out.printf("Order %d:\n", number++);
 
             showAllOrderItems(orderItems);
         }
-
-        System.out.println("\nAll of these orders await an employee's approval!");
     }
 
     public void viewDiscardedOrders(Map<Order, List<OrderItem>> discardedOrdersWithItems) {
-        int number = 0;
-        for (Map.Entry<Order, List<OrderItem>> entry : discardedOrdersWithItems.entrySet()) {
-            Order discardedOrder = entry.getKey();
-            List<OrderItem> orderItems = entry.getValue();
-
-            System.out.printf("Order %d:\n", number++);
-
-            showAllOrderItems(orderItems);
-
-            System.out.printf("Price of order is: %.2f lv.\n\n", discardedOrder.getTotalPrice());
-        }
+        viewOrders(discardedOrdersWithItems);
 
         System.out.println("All of these orders were discarded by an employee! Deleting...");
     }
 
+    public void viewActiveOrders(Map<Order, List<OrderItem>> activeOrdersWithItems) {
+        viewOrders(activeOrdersWithItems);
+
+        System.out.println("\nAll of these orders await an employee's approval!");
+    }
 
     public void orderingBooks() {
         System.out.println("Ordering...");
