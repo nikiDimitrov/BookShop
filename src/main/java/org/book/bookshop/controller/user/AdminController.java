@@ -3,26 +3,22 @@ package org.book.bookshop.controller.user;
 import org.book.bookshop.exceptions.NoBooksException;
 import org.book.bookshop.exceptions.NoOrdersException;
 import org.book.bookshop.exceptions.UserNotFoundException;
-import org.book.bookshop.helpers.InputValidator;
+import org.book.bookshop.helpers.BookShopValidator;
 import org.book.bookshop.model.*;
-import org.book.bookshop.service.*;
 import org.book.bookshop.view.user.AdminView;
-import org.book.bookshop.view.user.LoginView;
-import org.springframework.stereotype.Controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Controller
 public class AdminController extends UserController {
 
     private final AdminView view;
 
-    public AdminController(BookService bookService, LoginView loginView, UserService service, CategoryService categoryService, OrderService orderService, OrderItemService orderItemService, AdminView view) {
-        super(bookService, loginView, service, orderService, categoryService, orderItemService);
-        this.view = view;
+    public AdminController() {
+        super();
+        this.view = new AdminView();
     }
 
     @Override
@@ -87,15 +83,13 @@ public class AdminController extends UserController {
 
         Book book = null;
 
-        synchronized(this) {
-            try {
-                book = bookService.saveBook(name, author, price, chosenCategories, year, quantity);
-            }
-            catch (IllegalArgumentException e) {
-                view.displayError(e.getMessage());
-            }
-
+        try {
+            book = bookService.saveBook(name, author, price, chosenCategories, year, quantity);
         }
+        catch (IllegalArgumentException e) {
+            view.displayError(e.getMessage());
+        }
+
 
         if(book == null) {
             view.displayError("Book is not successfully added!");
@@ -112,16 +106,14 @@ public class AdminController extends UserController {
             books = getAllBooks();
             String argument = view.removeBook(books);
 
-            synchronized(this) {
-                try {
-                    int index = Integer.parseInt(argument);
+            try {
+                int index = Integer.parseInt(argument);
 
-                    bookService.deleteBook(books.get(index - 1));
-                    view.displayDeletingBookSuccess();
-                }
-                catch(RuntimeException e) {
-                    view.displayError("Incorrect argument!");
-                }
+                bookService.deleteBook(books.get(index - 1));
+                view.displayDeletingBookSuccess();
+            }
+            catch(RuntimeException e) {
+                view.displayError("Incorrect argument!");
             }
         }
         catch (NoBooksException e) {
@@ -193,10 +185,10 @@ public class AdminController extends UserController {
     }
 
     private int returnIntegerOrNegativeArgument(String input) {
-        return InputValidator.isInteger(input) ? Integer.parseInt(input) : -1;
+        return BookShopValidator.isInteger(input) ? Integer.parseInt(input) : -1;
     }
 
     private double returnDoubleOrNegativeArgument(String input) {
-        return InputValidator.isDouble(input) ? Double.parseDouble(input) : -1;
+        return BookShopValidator.isDouble(input) ? Double.parseDouble(input) : -1;
     }
 }

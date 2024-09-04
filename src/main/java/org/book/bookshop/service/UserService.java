@@ -1,29 +1,27 @@
 package org.book.bookshop.service;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
-import lombok.RequiredArgsConstructor;
 import org.book.bookshop.exceptions.NoUsersException;
 import org.book.bookshop.exceptions.UserNotFoundException;
+import org.book.bookshop.helpers.BookShopValidator;
 import org.book.bookshop.model.Role;
 import org.book.bookshop.model.User;
 import org.book.bookshop.repository.UserRepository;
 import org.book.bookshop.exceptions.IncorrectInputException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
-@Service
-@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
-    private final Validator validator;
+
+    public UserService() {
+        this.userRepository = new UserRepository();
+        this.encoder = new BCryptPasswordEncoder(16);
+    }
 
     public User registerUser(String username, String email, String password, Role role) throws IllegalArgumentException {
         if(userRepository.findByUsername(username).isPresent()
@@ -31,11 +29,12 @@ public class UserService {
             throw new IllegalArgumentException("User with that username or email already exists!");
         }
 
-        User user = new User(username, email, password);
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        User user = BookShopValidator.isUserValid(username, email, password);
 
-        if(!violations.isEmpty()) {
-            throw new IllegalArgumentException("Username and password should be more than 3 characters and email should be in valid format!");
+        if(user == null) {
+            throw new IllegalArgumentException("User is not valid! Username should have three characters or more, " +
+                    "email should have be in correct format " +
+                    "and password should have more than three characters.");
         }
 
         String encodedPassword = encoder.encode(password);

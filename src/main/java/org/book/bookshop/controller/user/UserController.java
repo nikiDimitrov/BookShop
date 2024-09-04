@@ -1,19 +1,15 @@
 package org.book.bookshop.controller.user;
 
-import lombok.RequiredArgsConstructor;
 import org.book.bookshop.exceptions.NoBooksException;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.User;
 import org.book.bookshop.service.*;
 import org.book.bookshop.view.user.LoginView;
 import org.book.bookshop.view.user.UserView;
-import org.springframework.stereotype.Controller;
 
 import java.util.Comparator;
 import java.util.List;
 
-@Controller
-@RequiredArgsConstructor
 public abstract class UserController {
 
     protected final BookService bookService;
@@ -27,6 +23,15 @@ public abstract class UserController {
     protected User user;
 
     protected static final String SEPARATOR = ", *";
+
+    protected UserController() {
+        this.bookService = new BookService();
+        this.loginView = new LoginView();
+        this.service = new UserService();
+        this.orderService = new OrderService();
+        this.categoryService = new CategoryService();
+        this.orderItemService = new OrderItemService();
+    }
 
     public abstract int run(User user);
 

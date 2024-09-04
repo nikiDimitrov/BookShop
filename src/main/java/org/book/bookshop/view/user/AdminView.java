@@ -5,17 +5,14 @@ import org.book.bookshop.showers.AdminOptionsShower;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Order;
 import org.book.bookshop.model.User;
-import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Component
 public class AdminView extends UserView {
 
-    public AdminView(Scanner scanner) {
-        super(scanner);
+    public AdminView() {
+        super();
     }
 
     public String adminOptions() {

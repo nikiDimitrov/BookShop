@@ -1,20 +1,21 @@
 package org.book.bookshop.service;
 
-import lombok.RequiredArgsConstructor;
 import org.book.bookshop.exceptions.NoOrdersException;
 import org.book.bookshop.model.*;
 import org.book.bookshop.repository.OrderItemRepository;
 import org.book.bookshop.repository.OrderRepository;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@RequiredArgsConstructor
-@Service
 public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
+
+    public OrderService() {
+        this.orderRepository = new OrderRepository();
+        this.orderItemRepository = new OrderItemRepository();
+    }
 
     public List<Order> findAllOrders() {
         return orderRepository.findAll();

@@ -2,14 +2,12 @@ package org.book.bookshop.repository;
 
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
-import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-@Repository
 public class BooksCategoriesRepository {
 
     private final String url = "jdbc:postgresql://localhost:5432/bookshop?stringtype=unspecified";

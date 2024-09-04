@@ -1,6 +1,5 @@
 package org.book.bookshop.controller.user;
 
-import lombok.RequiredArgsConstructor;
 import org.book.bookshop.exceptions.IncorrectInputException;
 import org.book.bookshop.exceptions.NoUsersException;
 import org.book.bookshop.exceptions.UserNotFoundException;
@@ -8,16 +7,18 @@ import org.book.bookshop.model.Role;
 import org.book.bookshop.model.User;
 import org.book.bookshop.service.UserService;
 import org.book.bookshop.view.user.LoginView;
-import org.springframework.stereotype.Controller;
 
-@Controller
-@RequiredArgsConstructor
 public class LoginController {
 
     private final UserService service;
     private final LoginView view;
 
     private User currentUser;
+
+    public LoginController() {
+        this.service = new UserService();
+        this.view = new LoginView();
+    }
 
     public User run() {
         String input = view.generalPrompt();

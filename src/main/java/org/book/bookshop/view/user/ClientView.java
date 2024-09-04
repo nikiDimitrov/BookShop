@@ -2,17 +2,14 @@ package org.book.bookshop.view.user;
 
 import org.book.bookshop.model.*;
 import org.book.bookshop.showers.ClientOptionsShower;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
-@Component
 public class ClientView extends UserView {
 
-    public ClientView(Scanner scanner) {
-        super(scanner);
+    public ClientView() {
+        super();
     }
 
     public String clientOptions() {

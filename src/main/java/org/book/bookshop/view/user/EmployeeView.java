@@ -4,16 +4,13 @@ import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Order;
 import org.book.bookshop.model.OrderItem;
 import org.book.bookshop.showers.EmployeeOptionsShower;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Scanner;
 
-@Component
 public class EmployeeView extends UserView {
 
-    public EmployeeView(Scanner scanner) {
-        super(scanner);
+    public EmployeeView() {
+        super();
     }
 
     public String employeeOptions() {

@@ -3,12 +3,9 @@ package org.book.bookshop.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.util.List;
 import java.util.UUID;
 
-@NoArgsConstructor
 @Data
 @Entity
 @Table(name = "orders")
@@ -20,7 +17,7 @@ public class Order {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;;
+    private User user;
 
     private double totalPrice;
 
@@ -29,6 +26,9 @@ public class Order {
 
     public Order(User user) {
         this.user = user;
-        this.status = "active";
+    }
+
+    public Order() {
+
     }
 }

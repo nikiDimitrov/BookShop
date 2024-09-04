@@ -2,21 +2,17 @@ package org.book.bookshop.controller.user;
 
 import org.book.bookshop.exceptions.NoBooksException;
 import org.book.bookshop.model.*;
-import org.book.bookshop.service.*;
 import org.book.bookshop.view.user.EmployeeView;
-import org.book.bookshop.view.user.LoginView;
-import org.springframework.stereotype.Controller;
 
 import java.util.*;
 
-@Controller
 public class EmployeeController extends UserController {
 
     private final EmployeeView view;
 
-    public EmployeeController(BookService bookService, LoginView loginView, UserService service, CategoryService categoryService, EmployeeView employeeView, OrderItemService orderItemService, OrderService orderService) {
-        super(bookService, loginView, service, orderService, categoryService, orderItemService);
-        this.view = employeeView;
+    public EmployeeController() {
+        super();
+        this.view = new EmployeeView();
     }
 
     @Override
@@ -102,36 +98,30 @@ public class EmployeeController extends UserController {
     private void approveOrder(Order order) {
         view.startApprovingOrder();
 
-        synchronized (this) {
-            Order approvedOrder = orderService.changeOrderStatus(order, "approved");
-            if(approvedOrder != null) {
-                for(OrderItem item : orderItemService.findByOrder(approvedOrder)) {
-                    bookService.updateBookQuantity(item);
-                }
-                view.finishedApprovingOrder();
+        Order approvedOrder = orderService.changeOrderStatus(order, "approved");
+        if(approvedOrder != null) {
+            for(OrderItem item : orderItemService.findByOrder(approvedOrder)) {
+                bookService.updateBookQuantity(item);
             }
+            view.finishedApprovingOrder();
         }
     }
 
     private void discardOrder(Order order) {
-        synchronized (this) {
-            view.startDiscardingOrder();
-            Order discardedOrder = orderService.changeOrderStatus(order, "discarded");
+        view.startDiscardingOrder();
+        Order discardedOrder = orderService.changeOrderStatus(order, "discarded");
 
-            if(discardedOrder != null) {
-                view.finishDiscardingOrder();
-            }
+        if(discardedOrder != null) {
+            view.finishDiscardingOrder();
         }
     }
 
     private void processRestocking(Map<Book, Integer> booksWithAddedQuantities) {
-        synchronized (this) {
-            for(Map.Entry<Book, Integer> entry : booksWithAddedQuantities.entrySet()) {
-                Book bookToRestock = entry.getKey();
-                int quantityToAdd = entry.getValue();
+        for(Map.Entry<Book, Integer> entry : booksWithAddedQuantities.entrySet()) {
+            Book bookToRestock = entry.getKey();
+            int quantityToAdd = entry.getValue();
 
-                bookService.restockBook(bookToRestock, quantityToAdd);
-            }
+            bookService.restockBook(bookToRestock, quantityToAdd);
         }
     }
 

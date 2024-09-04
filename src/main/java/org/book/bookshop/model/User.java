@@ -1,16 +1,11 @@
 package org.book.bookshop.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-@NoArgsConstructor
 @Data
 @Entity
 @Table(name = "users")
@@ -21,13 +16,10 @@ public class User {
     private UUID id;
 
     @NotNull(message = "Username cannot be null!")
-    @Size(min = 3, message = "Username should be more than 3 characters!")
     private String username;
 
-    @Email(message = "Email should be valid!")
     private String email;
 
-    @Size(min = 3, message = "Password should be more than 3 characters!")
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -37,5 +29,9 @@ public class User {
         this.username = username;
         this.email = email;
         this.password = password;
+    }
+
+    public User() {
+
     }
 }

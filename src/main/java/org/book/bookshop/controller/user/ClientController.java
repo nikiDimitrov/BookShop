@@ -2,22 +2,19 @@ package org.book.bookshop.controller.user;
 import org.book.bookshop.exceptions.NoBooksException;
 import org.book.bookshop.exceptions.NoOrdersException;
 import org.book.bookshop.model.*;
-import org.book.bookshop.service.*;
 import org.book.bookshop.view.user.ClientView;
-import org.book.bookshop.view.user.LoginView;
-import org.springframework.stereotype.Controller;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-@Controller
+
 public class ClientController extends UserController {
 
     private final ClientView view;
 
-    public ClientController(BookService bookService, LoginView loginView, UserService service, CategoryService categoryService, OrderService orderService, OrderItemService orderItemService, ClientView clientView) {
-        super(bookService, loginView, service, orderService, categoryService, orderItemService);
-        this.view = clientView;
+    public ClientController() {
+        super();
+        this.view = new ClientView();
     }
 
     @Override
@@ -98,9 +95,7 @@ public class ClientController extends UserController {
             view.viewDiscardedOrders(discardedOrdersWithItems);
 
             if(!discardedOrdersWithItems.isEmpty()) {
-                CompletableFuture.runAsync(() -> {
-                    orderService.deleteOrders(discardedOrders);
-                });
+                CompletableFuture.runAsync(() -> orderService.deleteOrders(discardedOrders));
 
                 view.displaySuccessfullyDeletedDiscardedOrders();
             }

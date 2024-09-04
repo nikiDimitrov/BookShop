@@ -2,12 +2,11 @@ package org.book.bookshop.repository;
 
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
-import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.*;
 
-@Repository
+
 public class BookRepository {
 
     private final String url = "jdbc:postgresql://localhost:5432/bookshop?stringtype=unspecified";
@@ -58,10 +57,10 @@ public class BookRepository {
         String sql = "SELECT * FROM books WHERE id = ?";
 
         try(Connection connection = DriverManager.getConnection(url, user, password);
-            PreparedStatement statement = connection.prepareStatement(sql);
-            ResultSet resultSet = statement.executeQuery();) {
-
+            PreparedStatement statement = connection.prepareStatement(sql)){
             statement.setObject(1, bookId);
+
+            ResultSet resultSet = statement.executeQuery();
 
             if(resultSet.next()){
                 Book book = mapResultSetToBook(resultSet);

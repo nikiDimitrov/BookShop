@@ -1,26 +1,27 @@
 package org.book.bookshop.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.Data;
 
 import java.util.UUID;
 
 @Data
 @Entity
-@Table(name = "categories")
-public class Category {
-
+public class Status {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private String name;
 
-    public Category(String name) {
+    public Status(String name) {
         this.name = name;
     }
 
-    public Category() {
+    public Status() {
 
     }
 }

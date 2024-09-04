@@ -1,15 +1,14 @@
 package org.book.bookshop.view.user;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-
 import java.util.Scanner;
 
-@Component
-@RequiredArgsConstructor
 public class LoginView {
 
     private final Scanner scanner;
+
+    public LoginView() {
+        this.scanner = new Scanner(System.in);
+    }
 
     public String generalPrompt() {
         System.out.println("Hello! Would you like to login or register?");

@@ -1,20 +1,20 @@
 package org.book.bookshop.view.user;
 
-import lombok.RequiredArgsConstructor;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
 import org.book.bookshop.model.OrderItem;
 import org.book.bookshop.model.User;
-import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Component
-@RequiredArgsConstructor
 public class UserView {
 
     protected final Scanner scanner;
+
+    public UserView() {
+        this.scanner = new Scanner(System.in);
+    }
 
     public void intro(User user) {
         System.out.printf("Welcome, %s %s!\n", user.getRole(), user.getUsername());
