@@ -1,5 +1,6 @@
 package org.book.bookshop.repository;
 
+import org.book.bookshop.helpers.DatabaseConnection;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
 
@@ -8,10 +9,7 @@ import java.util.*;
 
 
 public class BookRepository {
-
-    private final String url = "jdbc:postgresql://localhost:5432/bookshop?stringtype=unspecified";
-    private final String user = "postgres";
-    private final String password = System.getenv("DB_PASSWORD");
+    
 
     public List<Book> findAll() {
         List<Book> books = new ArrayList<>();
@@ -21,7 +19,7 @@ public class BookRepository {
         String categorySql = "SELECT bc.book_id, c.* FROM books_categories AS bc " +
                 "JOIN categories as c ON bc.categories_id = c.id where bc.book_id IN (SELECT id FROM books)";
 
-        try(Connection connection = DriverManager.getConnection(url, user, password);
+        try(Connection connection = DatabaseConnection.getConnection();
             PreparedStatement bookStatement = connection.prepareStatement(bookSql);
             PreparedStatement categoryStatement = connection.prepareStatement(categorySql);
             ResultSet bookResultSet = bookStatement.executeQuery();
@@ -56,7 +54,7 @@ public class BookRepository {
     public Optional<Book> findById(UUID bookId) {
         String sql = "SELECT * FROM books WHERE id = ?";
 
-        try(Connection connection = DriverManager.getConnection(url, user, password);
+        try(Connection connection = DatabaseConnection.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)){
             statement.setObject(1, bookId);
 
@@ -78,7 +76,7 @@ public class BookRepository {
     public void updateQuantity(Book book, int quantity) {
         String sql = "UPDATE books SET quantity = ? WHERE id = ?";
 
-        try(Connection connection = DriverManager.getConnection(url, user, password);
+        try(Connection connection = DatabaseConnection.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setInt(1, quantity);
@@ -94,7 +92,7 @@ public class BookRepository {
     public Book save(Book book) {
         String sql = "INSERT INTO books (id, name, author, price, year, quantity) VALUES (?, ?, ?, ?, ?, ?)";
 
-        try(Connection connection = DriverManager.getConnection(url, user, password);
+        try(Connection connection = DatabaseConnection.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             UUID bookId = UUID.randomUUID();
@@ -119,7 +117,7 @@ public class BookRepository {
     public void delete(Book book) {
         String sql = "DELETE FROM books WHERE id = ?";
 
-        try(Connection connection = DriverManager.getConnection(url, user, password);
+        try(Connection connection = DatabaseConnection.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, book.getId());
@@ -151,7 +149,7 @@ public class BookRepository {
         String sql = "SELECT bc.book_id, c.* FROM books_categories AS bc" +
                 " JOIN categories as c ON bc.categories_id = c.id WHERE bc.book_id = ?";
 
-        try(Connection connection = DriverManager.getConnection(url, user, password);
+        try(Connection connection = DatabaseConnection.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, book.getId());

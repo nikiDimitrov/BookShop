@@ -1,5 +1,6 @@
 package org.book.bookshop.repository;
 
+import org.book.bookshop.helpers.DatabaseConnection;
 import org.book.bookshop.model.Role;
 import org.book.bookshop.model.User;
 
@@ -10,10 +11,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class UserRepository {
-
-    private final String url = "jdbc:postgresql://localhost:5432/bookshop?stringtype=unspecified";
-    private final String username = "postgres";
-    private final String password = System.getenv("DB_PASSWORD");
 
     public Optional<User> findByUsername(String username) {
         String sql = "SELECT * FROM users WHERE username = ?";
@@ -26,7 +23,7 @@ public class UserRepository {
 
         String sql = "SELECT * FROM users";
 
-        try (Connection connection = DriverManager.getConnection(url, username, password);
+        try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             ResultSet resultSet = statement.executeQuery();
@@ -46,7 +43,7 @@ public class UserRepository {
     public Optional<User> findById(UUID id) {
         String sql = "SELECT * FROM users WHERE id = ?";
 
-        try(Connection connection = DriverManager.getConnection(url, username, password);
+        try(Connection connection = DatabaseConnection.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, id);
@@ -74,7 +71,7 @@ public class UserRepository {
     public User save(User user) {
         String sql = "INSERT INTO users (id, username, email, password, role) VALUES (?, ?, ?, ?, ?)";
 
-        try(Connection connection = DriverManager.getConnection(url, username, password);
+        try(Connection connection = DatabaseConnection.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             UUID id = UUID.randomUUID();
@@ -111,7 +108,7 @@ public class UserRepository {
     }
 
     private Optional<User> getUser(String argument, String sql) {
-        try (Connection connection = DriverManager.getConnection(url, username, password);
+        try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, argument);

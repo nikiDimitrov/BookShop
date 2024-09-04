@@ -1,21 +1,23 @@
 package org.book.bookshop;
 
 import org.book.bookshop.controller.MainController;
+import org.book.bookshop.helpers.DatabaseCreator;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
 public class BookShopApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(BookShopApplication.class, args);
+        DatabaseCreator databaseCreator = new DatabaseCreator();
+
+        databaseCreator.createTableFromScript("tables.sql");
         ConsoleRunner consoleRunner = new ConsoleRunner();
         consoleRunner.run();
     }
 
-    @EnableJpaRepositories
     public static class ConsoleRunner implements CommandLineRunner {
         private final MainController mainController;
 

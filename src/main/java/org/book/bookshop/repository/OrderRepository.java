@@ -1,5 +1,6 @@
 package org.book.bookshop.repository;
 
+import org.book.bookshop.helpers.DatabaseConnection;
 import org.book.bookshop.model.Order;
 import org.book.bookshop.model.Role;
 import org.book.bookshop.model.User;
@@ -11,20 +12,17 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class OrderRepository {
-    private String url = "jdbc:postgresql://localhost:5432/bookshop?stringtype=unspecified";
-    private String username = "postgres";
-    private String password = System.getenv("DB_PASSWORD");
-    private String sqlSelect ="SELECT o.id AS order_id, o.user_id AS order_user_id, o.total_price AS order_total_price, o.status AS order_status, " +
+    private final String SQLSELECT ="SELECT o.id AS order_id, o.user_id AS order_user_id, o.total_price AS order_total_price, o.status AS order_status, " +
             "u.id AS user_id, u.username AS user_username, u.email AS user_email, u.password AS user_password, u.role AS user_role FROM orders AS o" +
             " JOIN users AS u ON o.user_id = u.id ";
 
     public List<Order> findByUserAndStatus(User user, String status) {
         List<Order> orders = new ArrayList<>();
 
-        String sql = sqlSelect +
+        String sql = SQLSELECT +
                 "WHERE o.user_id = ? AND o.status = ?";
 
-        try (Connection connection = DriverManager.getConnection(url, username, password);
+        try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, user.getId());
@@ -45,10 +43,10 @@ public class OrderRepository {
     }
 
     public Optional<Order> findById(UUID id) {
-        String sql = sqlSelect +
+        String sql = SQLSELECT +
                 "WHERE o.id = ?";
 
-        try(Connection connection = DriverManager.getConnection(url, username, password);
+        try(Connection connection = DatabaseConnection.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, id);
@@ -71,10 +69,10 @@ public class OrderRepository {
     public List<Order> findByStatus(String status) {
         List<Order> orders = new ArrayList<>();
 
-        String sql = sqlSelect +
+        String sql = SQLSELECT +
                 "WHERE o.status = ?";
 
-        try (Connection connection = DriverManager.getConnection(url, username, password);
+        try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, status);
@@ -96,10 +94,9 @@ public class OrderRepository {
     public List<Order> findAll() {
         List<Order> orders = new ArrayList<>();
 
-        String sql = sqlSelect;
 
-        try(Connection connection = DriverManager.getConnection(url, username, password);
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+        try(Connection connection = DatabaseConnection.getConnection();
+            PreparedStatement statement = connection.prepareStatement(SQLSELECT)) {
 
             ResultSet resultSet = statement.executeQuery();
 
@@ -118,7 +115,7 @@ public class OrderRepository {
     public Order updateTotalPrice(Order order, double totalPrice) {
         String sql = "UPDATE orders SET total_price = ? WHERE id = ?";
 
-        try(Connection connection = DriverManager.getConnection(url, username, password);
+        try(Connection connection = DatabaseConnection.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setDouble(1, totalPrice);
@@ -138,7 +135,7 @@ public class OrderRepository {
     public Order updateStatus(Order order, String status) {
         String sql = "UPDATE orders SET status = ? WHERE id = ?";
 
-        try(Connection connection = DriverManager.getConnection(url, username, password);
+        try(Connection connection = DatabaseConnection.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, status);
@@ -158,7 +155,7 @@ public class OrderRepository {
     public Order save(Order order) {
         String sql = "INSERT INTO orders (id, status, total_price, user_id) VALUES (?, ?, ?, ?)";
 
-        try(Connection connection = DriverManager.getConnection(url, username, password);
+        try(Connection connection = DatabaseConnection.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             UUID id = UUID.randomUUID();
@@ -182,7 +179,7 @@ public class OrderRepository {
     public void delete(Order order) {
         String sql = "DELETE FROM orders WHERE id = ?";
 
-        try (Connection connection = DriverManager.getConnection(url, username, password);
+        try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, order.getId());

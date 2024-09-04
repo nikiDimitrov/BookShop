@@ -1,5 +1,6 @@
 package org.book.bookshop.repository;
 
+import org.book.bookshop.helpers.DatabaseConnection;
 import org.book.bookshop.model.Category;
 
 import java.sql.*;
@@ -8,14 +9,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class CategoryRepository {
-    private final String url = "jdbc:postgresql://localhost:5432/bookshop?stringtype=unspecified";
-    private final String user = "postgres";
-    private final String password = System.getenv("DB_PASSWORD");
 
     public Optional<Category> findCategoryByName(String name) {
         String sql = "SELECT * FROM categories WHERE name = ?";
 
-        try(Connection connection = DriverManager.getConnection(url, user, password);
+        try(Connection connection = DatabaseConnection.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, name);
@@ -36,7 +34,7 @@ public class CategoryRepository {
     public Optional<Category> findById(UUID id) {
         String sql = "SELECT * FROM categories WHERE id = ?";
 
-        try(Connection connection = DriverManager.getConnection(url, user, password);
+        try(Connection connection = DatabaseConnection.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, id);
@@ -58,7 +56,7 @@ public class CategoryRepository {
     public Category save(Category category) {
         String sql = "INSERT INTO categories (id, name) VALUES (?, ?)";
 
-        try(Connection connection = DriverManager.getConnection(url, user, password);
+        try(Connection connection = DatabaseConnection.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             UUID id = UUID.randomUUID();
@@ -85,7 +83,7 @@ public class CategoryRepository {
     public void delete(Category category) {
         String sql = "DELETE FROM categories WHERE id = ?";
 
-        try(Connection connection = DriverManager.getConnection(url, user, password);
+        try(Connection connection = DatabaseConnection.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, category.getId());
