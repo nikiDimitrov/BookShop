@@ -3,6 +3,7 @@ package org.book.bookshop.repository;
 import org.book.bookshop.helpers.DatabaseConnection;
 import org.book.bookshop.model.Order;
 import org.book.bookshop.model.Role;
+import org.book.bookshop.model.Status;
 import org.book.bookshop.model.User;
 
 import java.sql.*;
@@ -12,21 +13,23 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class OrderRepository {
-    private final String SQLSELECT ="SELECT o.id AS order_id, o.user_id AS order_user_id, o.total_price AS order_total_price, o.status AS order_status, " +
+    private final String SQLSELECT ="SELECT o.id AS order_id, o.user_id AS order_user_id, o.total_price AS order_total_price, " +
+            "s.id AS status_id, s.name AS status_name, " +
             "u.id AS user_id, u.username AS user_username, u.email AS user_email, u.password AS user_password, u.role AS user_role FROM orders AS o" +
-            " JOIN users AS u ON o.user_id = u.id ";
+            " JOIN users AS u ON o.user_id = u.id" +
+            " JOIN statuses as s ON o.status_id = s.id ";
 
-    public List<Order> findByUserAndStatus(User user, String status) {
+    public List<Order> findByUserAndStatus(User user, Status status) {
         List<Order> orders = new ArrayList<>();
 
         String sql = SQLSELECT +
-                "WHERE o.user_id = ? AND o.status = ?";
+                "WHERE o.user_id = ? AND o.status_id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, user.getId());
-            statement.setString(2, status);
+            statement.setObject(2, status.getId());
 
             ResultSet resultSet = statement.executeQuery();
 
@@ -66,16 +69,16 @@ public class OrderRepository {
         return Optional.empty();
     }
 
-    public List<Order> findByStatus(String status) {
+    public List<Order> findByStatus(Status status) {
         List<Order> orders = new ArrayList<>();
 
         String sql = SQLSELECT +
-                "WHERE o.status = ?";
+                "WHERE o.status_id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            statement.setString(1, status);
+            statement.setObject(1, status.getId());
 
             ResultSet resultSet = statement.executeQuery();
 
@@ -132,13 +135,13 @@ public class OrderRepository {
         return null;
     }
 
-    public Order updateStatus(Order order, String status) {
-        String sql = "UPDATE orders SET status = ? WHERE id = ?";
+    public Order updateStatus(Order order, Status status) {
+        String sql = "UPDATE orders SET status_id = ? WHERE id = ?";
 
         try(Connection connection = DatabaseConnection.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            statement.setString(1, status);
+            statement.setObject(1, status.getId());
             statement.setObject(2, order.getId());
 
             statement.executeUpdate();
@@ -153,7 +156,7 @@ public class OrderRepository {
     }
 
     public Order save(Order order) {
-        String sql = "INSERT INTO orders (id, status, total_price, user_id) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO orders (id, status_id, total_price, user_id) VALUES (?, ?, ?, ?)";
 
         try(Connection connection = DatabaseConnection.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -161,7 +164,7 @@ public class OrderRepository {
             UUID id = UUID.randomUUID();
 
             statement.setObject(1, id);
-            statement.setString(2, order.getStatus());
+            statement.setObject(2, order.getStatus().getId());
             statement.setDouble(3, order.getTotalPrice());
             statement.setObject(4, order.getUser().getId());
 
@@ -201,7 +204,9 @@ public class OrderRepository {
         UUID orderId = (UUID) resultSet.getObject("order_id");
         UUID userId = (UUID) resultSet.getObject("user_id");
         double totalPrice = resultSet.getDouble("order_total_price");
-        String status = resultSet.getString("order_status");
+
+        UUID statusId = (UUID) resultSet.getObject("status_id");
+        String status_name = resultSet.getString("status_name");
 
         String username = resultSet.getString("user_username");
         String email = resultSet.getString("user_email");
@@ -211,6 +216,9 @@ public class OrderRepository {
         User user = new User(username, email, password);
         user.setId(userId);
         user.setRole(role);
+
+        Status status = new Status(status_name);
+        status.setId(statusId);
 
         Order order = new Order(user);
 

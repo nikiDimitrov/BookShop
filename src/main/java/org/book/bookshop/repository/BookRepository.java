@@ -7,9 +7,7 @@ import org.book.bookshop.model.Category;
 import java.sql.*;
 import java.util.*;
 
-
 public class BookRepository {
-    
 
     public List<Book> findAll() {
         List<Book> books = new ArrayList<>();
@@ -45,6 +43,7 @@ public class BookRepository {
             }
         }
         catch (SQLException e) {
+            //to remove
             e.printStackTrace();
         }
 

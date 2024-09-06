@@ -1,6 +1,7 @@
 package org.book.bookshop.controller.user;
 
 import org.book.bookshop.exceptions.NoBooksException;
+import org.book.bookshop.helpers.StatusHelper;
 import org.book.bookshop.model.*;
 import org.book.bookshop.view.user.EmployeeView;
 
@@ -42,7 +43,9 @@ public class EmployeeController extends UserController {
     public void approveOrders() {
         view.startApprovingOrders();
 
-        List<Order> orders = orderService.findOrdersByStatus("active");
+        Status active = StatusHelper.getStatusByName("active");
+
+        List<Order> orders = orderService.findOrdersByStatus(active);
         if(orders.isEmpty()) {
             view.noOrdersFound();
             return;
@@ -98,7 +101,9 @@ public class EmployeeController extends UserController {
     private void approveOrder(Order order) {
         view.startApprovingOrder();
 
-        Order approvedOrder = orderService.changeOrderStatus(order, "approved");
+        Status approvedStatus = StatusHelper.getStatusByName("approved");
+
+        Order approvedOrder = orderService.changeOrderStatus(order, approvedStatus);
         if(approvedOrder != null) {
             for(OrderItem item : orderItemService.findByOrder(approvedOrder)) {
                 bookService.updateBookQuantity(item);
@@ -109,7 +114,10 @@ public class EmployeeController extends UserController {
 
     private void discardOrder(Order order) {
         view.startDiscardingOrder();
-        Order discardedOrder = orderService.changeOrderStatus(order, "discarded");
+
+        Status discardedStatus = StatusHelper.getStatusByName("discarded");
+
+        Order discardedOrder = orderService.changeOrderStatus(order, discardedStatus);
 
         if(discardedOrder != null) {
             view.finishDiscardingOrder();

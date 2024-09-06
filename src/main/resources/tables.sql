@@ -14,6 +14,12 @@ create table if not exists categories
     name varchar(255)
 );
 
+create table if not exists statuses
+(
+    id   uuid not null primary key,
+    name varchar(255)
+);
+
 create table if not exists  books_categories
 (
     book_id uuid not null
@@ -39,11 +45,13 @@ create table if not exists users
 create table if not exists orders
 (
     id          uuid  not null primary key,
-    status      varchar(255) not null,
     total_price double precision not null,
     user_id     uuid not null
         constraint fk32ql8ubntj5uh44ph9659tiih
-            references users
+            references users,
+    status_id   uuid not null
+        constraint fkji3jklfk334jofefgeq3545tg
+            references statuses
 );
 
 create table if not exists order_items

@@ -11,7 +11,8 @@ import java.util.UUID;
 public class OrderItemRepository {
     
     private final String SQLSELECT = "SELECT oi.id AS order_item_id, oi.quantity AS order_item_quantity, " +
-            "o.id AS order_id, o.total_price AS order_total_price, o.status AS order_status, " +
+            "o.id AS order_id, o.total_price AS order_total_price, " +
+            "s.id AS status_id, s.name AS status_name," +
             "b.id AS book_id, b.name AS book_name, b.author AS book_author, b.price AS book_price, b.year AS book_year, b.quantity as book_quantity, " +
             " u.id AS user_id, u.username AS user_username, u.email AS user_email, u.password AS user_password, u.role AS user_role, " +
             "c.id AS category_id, c.name AS category_name FROM order_items as oi " +
@@ -19,7 +20,8 @@ public class OrderItemRepository {
             "JOIN books as b on oi.book_id = b.id " +
             "JOIN users as u on o.user_id = u.id " +
             "JOIN books_categories as bc on bc.book_id = b.id " +
-            "JOIN categories as c on c.id = bc.categories_id";
+            "JOIN categories as c on c.id = bc.categories_id " +
+            "JOIN statuses as s on o.status_id = s.id";
 
     public Optional<OrderItem> findById(UUID id) {
         String sql = SQLSELECT +
@@ -125,7 +127,10 @@ public class OrderItemRepository {
         int year = resultSet.getInt("book_year");
 
         UUID userId = (UUID) resultSet.getObject("user_id");
-        String status = resultSet.getString("order_status");
+
+        UUID statusId = (UUID) resultSet.getObject("status_id");
+        String statusName = resultSet.getString("status_name");
+
         double orderPrice = resultSet.getDouble("order_total_price");
 
         String email = resultSet.getString("user_email");
@@ -136,6 +141,9 @@ public class OrderItemRepository {
         User user = new User(username, email, password);
         user.setId(userId);
         user.setRole(role);
+
+        Status status = new Status(statusName);
+        status.setId(statusId);
 
         Order order = new Order(user);
         order.setId(orderId);

@@ -16,7 +16,7 @@ public class BookShopValidator {
         boolean emailValid = BookShopValidator.isEmailValid(email);
         boolean passwordValid = BookShopValidator.isPasswordValid(password);
 
-        if(userNameValid || emailValid || passwordValid) {
+        if(userNameValid && emailValid && passwordValid) {
             return new User(username, email, password);
         }
         else {
@@ -90,7 +90,6 @@ public class BookShopValidator {
     }
 
     private static boolean isPasswordValid(String password) {
-
         return !isInputNullOrEmpty(password) && password.length() > 5;
     }
 

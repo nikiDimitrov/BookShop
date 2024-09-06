@@ -1,6 +1,7 @@
 package org.book.bookshop.controller.user;
 import org.book.bookshop.exceptions.NoBooksException;
 import org.book.bookshop.exceptions.NoOrdersException;
+import org.book.bookshop.helpers.StatusHelper;
 import org.book.bookshop.model.*;
 import org.book.bookshop.view.user.ClientView;
 
@@ -65,7 +66,10 @@ public class ClientController extends UserController {
     public void viewOrders() {
         try {
             view.startingDisplayActiveOrders();
-            List<Order> orders = orderService.findOrdersByUserAndStatus(user, "active");
+
+            Status active = StatusHelper.getStatusByName("active");
+
+            List<Order> orders = orderService.findOrdersByUserAndStatus(user, active);
 
             Map<Order, List<OrderItem>> ordersWithItems = new HashMap<>();
 
@@ -85,7 +89,10 @@ public class ClientController extends UserController {
             Map<Order, List<OrderItem>> discardedOrdersWithItems = new HashMap<>();
 
             view.startingDisplayDiscardedOrders();
-            List<Order> discardedOrders = orderService.findOrdersByUserAndStatus(user, "discarded");
+
+            Status discardedStatus = StatusHelper.getStatusByName("discarded");
+
+            List<Order> discardedOrders = orderService.findOrdersByUserAndStatus(user, discardedStatus);
 
             for(Order discardedOrder : discardedOrders) {
                 List<OrderItem> orderItems = orderItemService.findByOrder(discardedOrder);

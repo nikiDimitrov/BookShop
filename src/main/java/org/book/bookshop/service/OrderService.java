@@ -21,7 +21,7 @@ public class OrderService {
         return orderRepository.findAll();
     }
 
-    public List<Order> findOrdersByUserAndStatus(User user, String status) throws NoOrdersException {
+    public List<Order> findOrdersByUserAndStatus(User user, Status status) throws NoOrdersException {
         List<Order> orders = orderRepository.findByUserAndStatus(user, status);
 
         if(orders.isEmpty()) {
@@ -32,7 +32,7 @@ public class OrderService {
         }
     }
 
-    public List<Order> findOrdersByStatus(String status) throws NoOrdersException {
+    public List<Order> findOrdersByStatus(Status status) throws NoOrdersException {
         List<Order> orders = orderRepository.findByStatus(status);
 
         if(orders.isEmpty()) {
@@ -60,7 +60,7 @@ public class OrderService {
         return orderRepository.updateTotalPrice(order, totalPrice);
     }
 
-    public Order changeOrderStatus(Order order, String newStatus) {
+    public Order changeOrderStatus(Order order, Status newStatus) {
         order.setStatus(newStatus);
 
         return orderRepository.updateStatus(order, newStatus);

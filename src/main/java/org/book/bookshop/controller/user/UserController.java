@@ -18,6 +18,7 @@ public abstract class UserController {
     protected final OrderService orderService;
     protected final CategoryService categoryService;
     protected final OrderItemService orderItemService;
+    protected final StatusService statusService;
 
     protected UserView view;
     protected User user;
@@ -31,6 +32,7 @@ public abstract class UserController {
         this.orderService = new OrderService();
         this.categoryService = new CategoryService();
         this.orderItemService = new OrderItemService();
+        this.statusService = new StatusService();
     }
 
     public abstract int run(User user);

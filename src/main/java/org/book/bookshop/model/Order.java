@@ -2,6 +2,7 @@ package org.book.bookshop.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.book.bookshop.helpers.StatusHelper;
 
 import java.util.UUID;
 
@@ -15,13 +16,10 @@ public class Order {
 
     private double totalPrice;
 
-    private String status;
+    private Status status;
 
     public Order(User user) {
         this.user = user;
-    }
-
-    public Order() {
-
+        status = StatusHelper.getStatusByName("active");
     }
 }
