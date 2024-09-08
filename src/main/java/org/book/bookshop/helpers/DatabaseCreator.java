@@ -1,5 +1,7 @@
 package org.book.bookshop.helpers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -8,8 +10,9 @@ import java.sql.Connection;
 import java.sql.Statement;
 
 public class DatabaseCreator {
+    private final Logger log = LoggerFactory.getLogger(DatabaseCreator.class);
 
-    public void createTableFromScript(String scriptPath) {
+    public boolean createTableFromScript(String scriptPath) {
         try (Connection connection = DatabaseConnection.getConnection();
              Statement statement = connection.createStatement();
              InputStream inputStream = getClass().getClassLoader().getResourceAsStream(scriptPath)) {
@@ -24,12 +27,12 @@ public class DatabaseCreator {
                 }
 
                 statement.execute(sql.toString());
-                System.out.println("Database is ready.");
-
+                log.info("Database is created and it's functional.");
+                return true;
             }
         } catch (Exception e) {
-            //temporary
-            e.printStackTrace();
+            log.error(String.format("Error in creating database! %s Terminating app!", e.getMessage()));
+            return false;
         }
     }
 }

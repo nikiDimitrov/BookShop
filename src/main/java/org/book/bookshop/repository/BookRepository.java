@@ -43,8 +43,7 @@ public class BookRepository {
             }
         }
         catch (SQLException e) {
-            //to remove
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return books;
@@ -66,7 +65,7 @@ public class BookRepository {
             }
         }
         catch(SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return Optional.empty();
@@ -84,7 +83,7 @@ public class BookRepository {
             statement.executeUpdate();
         }
         catch(SQLException e){
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
     }
 
@@ -107,7 +106,7 @@ public class BookRepository {
             return findById(bookId).stream().findFirst().orElse(null);
         }
         catch (SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return null;
@@ -124,7 +123,7 @@ public class BookRepository {
             statement.executeUpdate();
         }
         catch(SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
     }
 
@@ -165,7 +164,7 @@ public class BookRepository {
             }
         }
         catch (SQLException e){
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         book.setCategories(categories);

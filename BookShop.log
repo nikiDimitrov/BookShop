@@ -1,0 +1,58 @@
+2024-09-08T04:47:06.687+03:00  INFO 9760 --- [BookShop] [restartedMain] org.book.bookshop.BookShopApplication    : Starting BookShopApplication using Java 22.0.1 with PID 9760 (D:\Projects\IntelliJ\BookShop\target\classes started by Niki in D:\Projects\IntelliJ\BookShop)
+2024-09-08T04:47:06.690+03:00  INFO 9760 --- [BookShop] [restartedMain] org.book.bookshop.BookShopApplication    : No active profile set, falling back to 1 default profile: "default"
+2024-09-08T04:47:06.761+03:00  INFO 9760 --- [BookShop] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2024-09-08T04:47:07.344+03:00  INFO 9760 --- [BookShop] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2024-09-08T04:47:07.373+03:00  INFO 9760 --- [BookShop] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 19 ms. Found 0 JPA repository interfaces.
+2024-09-08T04:47:07.823+03:00  INFO 9760 --- [BookShop] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2024-09-08T04:47:07.885+03:00  INFO 9760 --- [BookShop] [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.2.Final
+2024-09-08T04:47:07.922+03:00  INFO 9760 --- [BookShop] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2024-09-08T04:47:08.267+03:00  INFO 9760 --- [BookShop] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2024-09-08T04:47:08.296+03:00  INFO 9760 --- [BookShop] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2024-09-08T04:47:08.508+03:00  INFO 9760 --- [BookShop] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@42a2434e
+2024-09-08T04:47:08.510+03:00  INFO 9760 --- [BookShop] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2024-09-08T04:47:08.971+03:00  INFO 9760 --- [BookShop] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2024-09-08T04:47:08.978+03:00  INFO 9760 --- [BookShop] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2024-09-08T04:47:09.248+03:00  INFO 9760 --- [BookShop] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2024-09-08T04:47:09.288+03:00  INFO 9760 --- [BookShop] [restartedMain] org.book.bookshop.BookShopApplication    : Started BookShopApplication in 3.11 seconds (process running for 4.008)
+2024-09-08T04:47:13.894+03:00  INFO 9760 --- [BookShop] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2024-09-08T04:47:13.897+03:00  INFO 9760 --- [BookShop] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2024-09-08T04:47:13.903+03:00  INFO 9760 --- [BookShop] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2024-09-08T04:47:56.738+03:00  INFO 4972 --- [BookShop] [restartedMain] org.book.bookshop.BookShopApplication    : Starting BookShopApplication using Java 22.0.1 with PID 4972 (D:\Projects\IntelliJ\BookShop\target\classes started by Niki in D:\Projects\IntelliJ\BookShop)
+2024-09-08T04:47:56.742+03:00  INFO 4972 --- [BookShop] [restartedMain] org.book.bookshop.BookShopApplication    : No active profile set, falling back to 1 default profile: "default"
+2024-09-08T04:47:56.821+03:00  INFO 4972 --- [BookShop] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2024-09-08T04:47:57.445+03:00  INFO 4972 --- [BookShop] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2024-09-08T04:47:57.477+03:00  INFO 4972 --- [BookShop] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 21 ms. Found 0 JPA repository interfaces.
+2024-09-08T04:47:57.939+03:00  INFO 4972 --- [BookShop] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2024-09-08T04:47:58.003+03:00  INFO 4972 --- [BookShop] [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.2.Final
+2024-09-08T04:47:58.041+03:00  INFO 4972 --- [BookShop] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2024-09-08T04:47:58.398+03:00  INFO 4972 --- [BookShop] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2024-09-08T04:47:58.430+03:00  INFO 4972 --- [BookShop] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2024-09-08T04:47:58.648+03:00  INFO 4972 --- [BookShop] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@7ac0fd1
+2024-09-08T04:47:58.649+03:00  INFO 4972 --- [BookShop] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2024-09-08T04:47:59.128+03:00  INFO 4972 --- [BookShop] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2024-09-08T04:47:59.135+03:00  INFO 4972 --- [BookShop] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2024-09-08T04:47:59.476+03:00  INFO 4972 --- [BookShop] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2024-09-08T04:47:59.541+03:00  INFO 4972 --- [BookShop] [restartedMain] org.book.bookshop.BookShopApplication    : Started BookShopApplication in 3.35 seconds (process running for 4.3)
+2024-09-08T04:54:50.638+03:00  INFO 4972 --- [BookShop] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2024-09-08T04:54:50.645+03:00  INFO 4972 --- [BookShop] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2024-09-08T04:54:50.652+03:00  INFO 4972 --- [BookShop] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2024-09-08T04:54:57.507+03:00  INFO 12292 --- [BookShop] [restartedMain] org.book.bookshop.BookShopApplication    : Starting BookShopApplication using Java 22.0.1 with PID 12292 (D:\Projects\IntelliJ\BookShop\target\classes started by Niki in D:\Projects\IntelliJ\BookShop)
+2024-09-08T04:54:57.510+03:00  INFO 12292 --- [BookShop] [restartedMain] org.book.bookshop.BookShopApplication    : No active profile set, falling back to 1 default profile: "default"
+2024-09-08T04:54:57.581+03:00  INFO 12292 --- [BookShop] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2024-09-08T04:54:58.173+03:00  INFO 12292 --- [BookShop] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2024-09-08T04:54:58.205+03:00  INFO 12292 --- [BookShop] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 22 ms. Found 0 JPA repository interfaces.
+2024-09-08T04:54:58.664+03:00  INFO 12292 --- [BookShop] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2024-09-08T04:54:58.731+03:00  INFO 12292 --- [BookShop] [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.2.Final
+2024-09-08T04:54:58.775+03:00  INFO 12292 --- [BookShop] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2024-09-08T04:54:59.109+03:00  INFO 12292 --- [BookShop] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2024-09-08T04:54:59.138+03:00  INFO 12292 --- [BookShop] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2024-09-08T04:54:59.348+03:00  INFO 12292 --- [BookShop] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@1a0f1024
+2024-09-08T04:54:59.350+03:00  INFO 12292 --- [BookShop] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2024-09-08T04:54:59.820+03:00  INFO 12292 --- [BookShop] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2024-09-08T04:54:59.827+03:00  INFO 12292 --- [BookShop] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2024-09-08T04:55:00.106+03:00  INFO 12292 --- [BookShop] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2024-09-08T04:55:00.157+03:00  INFO 12292 --- [BookShop] [restartedMain] org.book.bookshop.BookShopApplication    : Started BookShopApplication in 3.189 seconds (process running for 4.154)
+2024-09-08T04:55:00.227+03:00  INFO 12292 --- [BookShop] [restartedMain] o.book.bookshop.helpers.DatabaseCreator  : Database is created and it's functional.
+2024-09-08T04:55:43.700+03:00  INFO 12292 --- [BookShop] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2024-09-08T04:55:43.703+03:00  INFO 12292 --- [BookShop] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2024-09-08T04:55:43.710+03:00  INFO 12292 --- [BookShop] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

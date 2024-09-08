@@ -25,7 +25,7 @@ public class CategoryRepository {
             }
         }
         catch(SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return Optional.empty();
@@ -48,7 +48,7 @@ public class CategoryRepository {
             }
         }
         catch(SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return Optional.empty();
@@ -68,7 +68,7 @@ public class CategoryRepository {
             return findById(id).stream().findFirst().orElse(null);
         }
         catch (SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return null;
@@ -85,7 +85,7 @@ public class CategoryRepository {
             statement.executeUpdate();
         }
         catch (SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
     }
 

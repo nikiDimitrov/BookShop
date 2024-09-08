@@ -13,9 +13,12 @@ public class BookShopApplication {
         SpringApplication.run(BookShopApplication.class, args);
         DatabaseCreator databaseCreator = new DatabaseCreator();
 
-        databaseCreator.createTableFromScript("tables.sql");
-        ConsoleRunner consoleRunner = new ConsoleRunner();
-        consoleRunner.run();
+        boolean tableCreated = databaseCreator.createTableFromScript("tables.sql");
+
+        if(tableCreated) {
+            ConsoleRunner consoleRunner = new ConsoleRunner();
+            consoleRunner.run();
+        }
     }
 
     public static class ConsoleRunner implements CommandLineRunner {

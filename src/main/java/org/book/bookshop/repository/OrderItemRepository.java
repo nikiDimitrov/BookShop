@@ -40,7 +40,7 @@ public class OrderItemRepository {
             }
         }
         catch(SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return Optional.empty();
@@ -64,7 +64,7 @@ public class OrderItemRepository {
             }
         }
         catch(SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return orderItems;
@@ -87,7 +87,7 @@ public class OrderItemRepository {
             return findById(id).stream().findFirst().orElse(null);
         }
         catch (SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return null;
@@ -104,7 +104,7 @@ public class OrderItemRepository {
             statement.executeUpdate();
         }
         catch(SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
     }
 

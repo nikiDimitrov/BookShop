@@ -29,7 +29,7 @@ public class StatusRepository {
             }
         }
         catch(SQLException e){
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return Optional.empty();
@@ -52,7 +52,7 @@ public class StatusRepository {
             }
         }
         catch(SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return Optional.empty();
@@ -73,7 +73,7 @@ public class StatusRepository {
             return findById(id).stream().findFirst().orElse(null);
         }
         catch(SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return null;
@@ -90,7 +90,7 @@ public class StatusRepository {
             statement.executeUpdate();
         }
         catch (SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
     }
 

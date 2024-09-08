@@ -25,7 +25,7 @@ public class BooksCategoriesRepository {
             }
         }
         catch (SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
     }
 
@@ -43,7 +43,7 @@ public class BooksCategoriesRepository {
             }
         }
         catch (SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
     }
 }

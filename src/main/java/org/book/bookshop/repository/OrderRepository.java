@@ -39,7 +39,7 @@ public class OrderRepository {
             }
         }
         catch(SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return orders;
@@ -63,7 +63,7 @@ public class OrderRepository {
             }
         }
         catch(SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return Optional.empty();
@@ -88,7 +88,7 @@ public class OrderRepository {
             }
         }
         catch(SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return orders;
@@ -109,7 +109,7 @@ public class OrderRepository {
             }
         }
         catch(SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return orders;
@@ -129,7 +129,7 @@ public class OrderRepository {
             return findById(order.getId()).stream().findFirst().orElse(null);
         }
         catch(SQLException e){
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return null;
@@ -149,7 +149,7 @@ public class OrderRepository {
             return findById(order.getId()).stream().findFirst().orElse(null);
         }
         catch(SQLException e){
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return null;
@@ -173,7 +173,7 @@ public class OrderRepository {
             return findById(id).stream().findFirst().orElse(null);
         }
         catch (SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return null;
@@ -190,7 +190,7 @@ public class OrderRepository {
             statement.executeUpdate();
         }
         catch(SQLException e) {
-            e.printStackTrace();
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
     }
 

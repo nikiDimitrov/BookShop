@@ -36,7 +36,6 @@ public class BookService {
     }
 
     public Book saveBook(String name, String author, double price, List<Category> categories, int year, int quantity) throws IllegalArgumentException {
-
         Book book = BookShopValidator.isBookValid(name, author, price, categories, year, quantity);
 
         if(book == null) {
