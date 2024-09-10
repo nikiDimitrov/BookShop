@@ -1,10 +1,14 @@
 package org.book.bookshop.view.user;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.Scanner;
 
 public class LoginView {
 
     private final Scanner scanner;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public LoginView() {
         this.scanner = new Scanner(System.in);
@@ -16,18 +20,21 @@ public class LoginView {
         return scanner.nextLine().trim();
     }
 
-    public String[] loginPrompts() {
+    public JsonNode loginPrompts() {
         System.out.println("Username: ");
         String username = scanner.nextLine().trim();
 
         System.out.println("Password: ");
         String password = scanner.nextLine().trim();
 
-        return new String[] {username, password};
+        return objectMapper.createObjectNode()
+                .put("action", "LOGIN")
+                .put("username", username)
+                .put("password", password);
 
     }
 
-    public String[] registerPrompts() {
+    public JsonNode registerPrompts() {
         System.out.println("Username: ");
         String username = scanner.nextLine().trim();
 
@@ -37,7 +44,11 @@ public class LoginView {
         System.out.println("Password: ");
         String password = scanner.nextLine().trim();
 
-        return new String[] {username, email, password};
+        return objectMapper.createObjectNode()
+                .put("action", "REGISTER")
+                .put("username", username)
+                .put("email", email)
+                .put("password", password);
     }
 
     public void displayError(String message) {

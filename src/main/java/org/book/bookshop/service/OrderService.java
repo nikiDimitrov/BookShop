@@ -6,6 +6,7 @@ import org.book.bookshop.repository.OrderItemRepository;
 import org.book.bookshop.repository.OrderRepository;
 
 import java.util.List;
+import java.util.UUID;
 
 public class OrderService {
 
@@ -15,6 +16,10 @@ public class OrderService {
     public OrderService() {
         this.orderRepository = new OrderRepository();
         this.orderItemRepository = new OrderItemRepository();
+    }
+
+    public Order findById(UUID id) {
+        return orderRepository.findById(id).stream().findFirst().orElse(null);
     }
 
     public List<Order> findAllOrders() {
@@ -60,10 +65,10 @@ public class OrderService {
         return orderRepository.updateTotalPrice(order, totalPrice);
     }
 
-    public Order changeOrderStatus(Order order, Status newStatus) {
+    public void changeOrderStatus(Order order, Status newStatus) {
         order.setStatus(newStatus);
 
-        return orderRepository.updateStatus(order, newStatus);
+        orderRepository.updateStatus(order, newStatus);
     }
 
     public void deleteOrders(List<Order> orders) {

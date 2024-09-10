@@ -10,6 +10,7 @@ import org.book.bookshop.repository.BooksCategoriesRepository;
 import org.book.bookshop.repository.CategoryRepository;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -33,6 +34,10 @@ public class BookService {
         }
 
         return books;
+    }
+
+    public Book findById(UUID id) {
+        return bookRepository.findById(id).stream().findFirst().orElse(null);
     }
 
     public Book saveBook(String name, String author, double price, List<Category> categories, int year, int quantity) throws IllegalArgumentException {

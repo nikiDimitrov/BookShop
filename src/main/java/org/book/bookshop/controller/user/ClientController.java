@@ -1,20 +1,24 @@
 package org.book.bookshop.controller.user;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.book.bookshop.exceptions.NoBooksException;
-import org.book.bookshop.exceptions.NoOrdersException;
-import org.book.bookshop.helpers.StatusHelper;
 import org.book.bookshop.model.*;
 import org.book.bookshop.view.user.ClientView;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 
 public class ClientController extends UserController {
 
     private final ClientView view;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ClientController() {
-        super();
+    public ClientController(BufferedWriter out, BufferedReader in) {
+        super(out, in);
         this.view = new ClientView();
     }
 
@@ -45,6 +49,7 @@ public class ClientController extends UserController {
     public void orderBooks() {
         try {
             List<Book> books = getAllBooks();
+
             String[] arguments = view.placeOrder(books);
 
             int[] bookIndexes = parseIndexes(arguments[0]);
@@ -58,58 +63,82 @@ public class ClientController extends UserController {
 
         } catch (NoBooksException e) {
             view.displayError(e.getMessage());
+        } catch (IOException e) {
+            view.displayError("Failed to communicate with the server.");
         } catch (RuntimeException e) {
             view.displayError("Incorrect argument!");
         }
     }
 
+    private void processOrder(Map<Book, Integer> booksWithQuantities) throws IOException {
+        view.orderingBooks();
+
+        ObjectNode orderRequest = objectMapper.createObjectNode()
+                .put("action", "PROCESS_ORDER")
+                .put("user", user.getUsername());
+
+        ObjectNode booksNode = objectMapper.createObjectNode();
+        for (Map.Entry<Book, Integer> entry : booksWithQuantities.entrySet()) {
+            booksNode.put(String.valueOf(entry.getKey().getId()), entry.getValue());
+        }
+        orderRequest.set("books_with_quantities", booksNode);
+
+        out.write(orderRequest + "\n");
+        out.flush();
+
+        JsonNode response = objectMapper.readTree(in.readLine());
+        String status = response.get("status").asText();
+
+        if (status.equals("success")) {
+            view.displayOrderSuccessful();
+        } else {
+            view.displayError(response.get("message").asText());
+        }
+    }
+
     public void viewOrders() {
         try {
-            view.startingDisplayActiveOrders();
+            JsonNode request = objectMapper.createObjectNode()
+                    .put("action", "VIEW_ORDERS")
+                    .put("user", user.getUsername());
 
-            Status active = StatusHelper.getStatusByName("active");
+            out.write(request.toString() + "\n");
+            out.flush();
 
-            List<Order> orders = orderService.findOrdersByUserAndStatus(user, active);
+            JsonNode response = objectMapper.readTree(in.readLine());
+            String status = response.get("status").asText();
 
-            Map<Order, List<OrderItem>> ordersWithItems = new HashMap<>();
+            if (status.equals("success")) {
+                String activeOrdersJson = response.get("active_orders").toString();
+                List<Order> activeOrders = objectMapper.readValue(activeOrdersJson, objectMapper.getTypeFactory().constructCollectionType(List.class, Order.class));
 
-            for(Order order : orders) {
-                List<OrderItem> orderItems = orderItemService.findByOrder(order);
+                Map<Order, List<OrderItem>> ordersWithItems = new HashMap<>();
+                for (Order order : activeOrders) {
+                    String orderItemsJson = response.get("order_items_" + order.getId()).toString();
+                    List<OrderItem> orderItems = objectMapper.readValue(orderItemsJson, objectMapper.getTypeFactory().constructCollectionType(List.class, OrderItem.class));
+                    ordersWithItems.put(order, orderItems);
+                }
 
-                ordersWithItems.put(order, orderItems);
+                view.viewActiveOrders(ordersWithItems);
+
+                String discardedOrdersJson = response.get("discarded_orders").toString();
+                List<Order> discardedOrders = objectMapper.readValue(discardedOrdersJson, objectMapper.getTypeFactory().constructCollectionType(List.class, Order.class));
+
+                ordersWithItems.clear();
+                for (Order discardedOrder : discardedOrders) {
+                    String orderItemsJson = response.get("order_items_" + discardedOrder.getId()).toString();
+                    List<OrderItem> orderItems = objectMapper.readValue(orderItemsJson, objectMapper.getTypeFactory().constructCollectionType(List.class, OrderItem.class));
+                    ordersWithItems.put(discardedOrder, orderItems);
+                }
+
+                view.viewDiscardedOrders(ordersWithItems);
+
+            } else {
+                view.displayError(response.get("message").asText());
             }
 
-            view.viewActiveOrders(ordersWithItems);
-        }
-        catch (NoOrdersException e) {
-            view.displayError(e.getMessage());
-        }
-
-        try {
-            Map<Order, List<OrderItem>> discardedOrdersWithItems = new HashMap<>();
-
-            view.startingDisplayDiscardedOrders();
-
-            Status discardedStatus = StatusHelper.getStatusByName("discarded");
-
-            List<Order> discardedOrders = orderService.findOrdersByUserAndStatus(user, discardedStatus);
-
-            for(Order discardedOrder : discardedOrders) {
-                List<OrderItem> orderItems = orderItemService.findByOrder(discardedOrder);
-                discardedOrdersWithItems.put(discardedOrder, orderItems);
-            }
-
-            view.viewDiscardedOrders(discardedOrdersWithItems);
-
-            if(!discardedOrdersWithItems.isEmpty()) {
-                CompletableFuture.runAsync(() -> orderService.deleteOrders(discardedOrders));
-
-                view.displaySuccessfullyDeletedDiscardedOrders();
-            }
-
-        }
-        catch (NoOrdersException e) {
-            view.displayError(e.getMessage());
+        } catch (IOException e) {
+            view.displayError("Failed to communicate with the server.");
         }
     }
 
@@ -165,25 +194,6 @@ public class ClientController extends UserController {
         return answer.equalsIgnoreCase("y");
     }
 
-    private void processOrder(Map<Book, Integer> booksWithQuantities) {
-        List<OrderItem> orderItems = new ArrayList<>();
-        view.orderingBooks();
-
-        Order order = orderService.save(user);
-        
-        for (Map.Entry<Book, Integer> entry : booksWithQuantities.entrySet()) {
-            OrderItem orderItem = new OrderItem(order, entry.getKey(), entry.getValue());
-            orderItems.add(orderItem);
-        }
-
-        Order result = orderService.makeOrder(order, orderItems);
-
-        if (result == null) {
-            view.displayError("Order cannot be made!");
-        } else {
-            view.displayOrderSuccessful();
-        }
-    }
 
     private List<OrderItem> convertMapToOrderItems(Map<Book, Integer> books) {
         List<OrderItem> orderItems = new ArrayList<>();

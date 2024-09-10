@@ -1,13 +1,14 @@
 package org.book.bookshop.controller.user;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.book.bookshop.exceptions.NoBooksException;
-import org.book.bookshop.exceptions.NoOrdersException;
-import org.book.bookshop.exceptions.UserNotFoundException;
-import org.book.bookshop.helpers.BookShopValidator;
 import org.book.bookshop.model.*;
 import org.book.bookshop.view.user.AdminView;
 
-import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,9 +16,10 @@ import java.util.Map;
 public class AdminController extends UserController {
 
     private final AdminView view;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public AdminController() {
-        super();
+    public AdminController(BufferedWriter out, BufferedReader in) {
+        super(out, in);
         this.view = new AdminView();
     }
 
@@ -50,145 +52,185 @@ public class AdminController extends UserController {
     }
 
     public void registerEmployee() {
-        String[] employeeDetails = loginView.registerPrompts();
+        JsonNode employeeDetails = loginView.registerPrompts();
 
-        String username = employeeDetails[0];
-        String email = employeeDetails[1];
-        String password = employeeDetails[2];
+        String username = employeeDetails.get("username").asText();
+        String email = employeeDetails.get("email").asText();
+        String password = employeeDetails.get("password").asText();
+
+        JsonNode registerEmployeeRequest = objectMapper.createObjectNode()
+                .put("action", "REGISTER_EMPLOYEE")
+                .put("admin", user.getUsername())
+                .put("username", username)
+                .put("email", email)
+                .put("password", password);
 
         try {
-            service.registerUser(username, email, password, Role.EMPLOYEE);
-            loginView.displayRegistrationSuccess();
+            out.write(registerEmployeeRequest.toString() + "\n");
+            out.flush();
+
+            JsonNode response = objectMapper.readTree(in.readLine());
+            String status = response.get("status").asText();
+
+            if(status.equals("success")) {
+                loginView.displayRegistrationSuccess();
+            }
+            else if(status.equals("failure")){
+                String error = response.get("message").asText();
+                loginView.displayError(error);
+            }
         }
-        catch (IllegalArgumentException e) {
-            view.displayError(e.getMessage());
+        catch(IOException e) {
+            view.displayError("Failed to communicate with the server. Please try again.");
         }
     }
 
     public void addBook() {
-        String[] bookDetails = view.addBook();
+        JsonNode bookDetails = view.addBook();
 
-        String name = bookDetails[0];
-        String author = bookDetails[1];
-        String priceString = bookDetails[2];
-        String categories = bookDetails[3];
-        String yearString = bookDetails[4];
-        String quantityString = bookDetails[5];
+        String name = bookDetails.get("name").asText();
+        String author = bookDetails.get("author").asText();
+        String priceString = bookDetails.get("price").asText();
+        String categories = bookDetails.get("categories").asText();
+        String yearString = bookDetails.get("year").asText();
+        String quantityString = bookDetails.get("quantity").asText();
 
-        double price = returnDoubleOrNegativeArgument(priceString);
-        int year = returnIntegerOrNegativeArgument(yearString);
-        int quantity = returnIntegerOrNegativeArgument(quantityString);
 
-        List<Category> chosenCategories = getCategoriesByNames(categories);
-
-        Book book = null;
+        JsonNode addingBookRequest = objectMapper.createObjectNode()
+                .put("action", "ADD_BOOK")
+                .put("admin", user.getUsername())
+                .put("name", name)
+                .put("author", author)
+                .put("price", priceString)
+                .put("categories", categories)
+                .put("year", yearString)
+                .put("quantity", quantityString);
 
         try {
-            book = bookService.saveBook(name, author, price, chosenCategories, year, quantity);
+            out.write(addingBookRequest.toString() + "\n");
+            out.flush();
+
+            JsonNode response = objectMapper.readTree(in.readLine());
+
+            String status = response.get("status").asText();
+
+            if(status.equals("success")) {
+                view.displayAddingBookSuccess();
+            }
+            else if(status.equals("failure")) {
+                String error = response.get("message").asText();
+                view.displayError(error);
+            }
         }
-        catch (IllegalArgumentException e) {
-            view.displayError(e.getMessage());
+        catch (IOException e){
+            view.displayError("Failed to communicate with the server. Please try again.");
         }
 
-
-        if(book == null) {
-            view.displayError("Book is not successfully added!");
-        }
-        else {
-            view.displayAddingBookSuccess();
-        }
     }
 
     public void removeBook() {
-        List<Book> books;
-
         try {
-            books = getAllBooks();
+            List<Book> books = getAllBooks();
+
             String argument = view.removeBook(books);
 
-            try {
-                int index = Integer.parseInt(argument);
+            int index = Integer.parseInt(argument);
+            Book bookToDelete = books.get(index - 1);
 
-                bookService.deleteBook(books.get(index - 1));
+            String bookJson = objectMapper.writeValueAsString(bookToDelete);
+
+            JsonNode request = objectMapper.createObjectNode()
+                    .put("action", "REMOVE_BOOK")
+                    .put("admin", user.getUsername())
+                    .put("book", bookJson);
+
+            out.write(request.toString() + "\n");
+            out.flush();
+
+            JsonNode response = objectMapper.readTree(in.readLine());
+
+            if (response.get("status").asText().equals("success")) {
                 view.displayDeletingBookSuccess();
+            } else {
+                view.displayError(response.get("message").asText());
             }
-            catch(RuntimeException e) {
-                view.displayError("Incorrect argument!");
-            }
-        }
-        catch (NoBooksException e) {
-            view.displayError(e.getMessage());
+        } catch (RuntimeException e) {
+            view.displayError("Incorrect argument!");
+        } catch (IOException e) {
+            view.displayError("Failed to communicate with the server. Please try again.");
         }
     }
+
 
     public void showAllUsers() {
-        List<User> users = new ArrayList<>();
+        JsonNode request = objectMapper.createObjectNode()
+                .put("action", "SHOW_USERS")
+                .put("admin", user.getUsername());
 
         try {
-            users = service.findAllUsers();
-        }
-        catch (UserNotFoundException e) {
-            view.displayError(e.getMessage());
-        }
-        finally {
-            view.showAllUsers(users);
+            out.write(request.toString() + "\n");
+            out.flush();
+
+            JsonNode response = objectMapper.readTree(in.readLine());
+            String status = response.get("status").asText();
+
+            if (status.equals("success")) {
+                String usersJson = response.get("users").asText();
+                List<User> users = objectMapper.readValue(usersJson, objectMapper.getTypeFactory().constructCollectionType(List.class, User.class));
+                view.showAllUsers(users);
+            } else {
+                view.displayError(response.get("message").asText());
+            }
+        } catch (IOException e) {
+            view.displayError("Failed to fetch users from server.");
         }
     }
 
-    public void showAllBooks(boolean showCategories) {
-        List<Book> books;
-
-        try {
-            books = getAllBooks();
-            view.showAllBooks(books, showCategories);
-        }
-        catch(NoBooksException e){
-            view.displayError(e.getMessage());
-        }
-    }
 
     public void showAllOrders() {
+        JsonNode request = objectMapper.createObjectNode()
+                .put("action", "SHOW_ORDERS")
+                .put("user", user.getUsername());
+
         try {
-            List<Order> orders = orderService.findAllOrders();
+            out.write(request.toString() + "\n");
+            out.flush();
 
-            Map<Order, List<OrderItem>> ordersWithItems = new HashMap<>();
+            JsonNode response = objectMapper.readTree(in.readLine());
+            String status = response.get("status").asText();
 
-            for(Order order : orders) {
-                List<OrderItem> orderItems = orderItemService.findByOrder(order);
-                ordersWithItems.put(order, orderItems);
+            if (status.equals("success")) {
+                String ordersJson = response.get("orders").toString();
+                List<Order> orders = objectMapper.readValue(ordersJson, objectMapper.getTypeFactory().constructCollectionType(List.class, Order.class));
+
+                Map<Order, List<OrderItem>> ordersWithItems = new HashMap<>();
+                for (Order order : orders) {
+                    String orderItemsJson = response.get("order_items_" + order.getId()).toString();
+                    List<OrderItem> orderItems = objectMapper.readValue(orderItemsJson, objectMapper.getTypeFactory().constructCollectionType(List.class, OrderItem.class));
+                    ordersWithItems.put(order, orderItems);
+                }
+
+                view.showAllOrders(ordersWithItems);
+            } else {
+                view.displayError(response.get("message").asText());
             }
-
-            view.showAllOrders(ordersWithItems);
+        } catch (IOException e) {
+            view.displayError("Failed to fetch orders from server.");
         }
-        catch (NoOrdersException e) {
-            view.displayError("No orders found!");
-        }
-
     }
 
 
-    private List<Category> getCategoriesByNames(String categoriesString) {
-        List<Category> categories = new ArrayList<>();
-
-        String[] categoriesNames = categoriesString.split(SEPARATOR);
-
-        for(String categoryName : categoriesNames) {
-            Category category = categoryService.getCategoryByName(categoryName.toLowerCase());
-
-            if(category == null){
-                category = categoryService.saveCategory(categoryName.toLowerCase());
+    public void showAllBooks(boolean showCategories) {
+        try {
+            List<Book> books = getAllBooks();
+            if (books != null) {
+                view.showAllBooks(books, showCategories);
             }
-            categories.add(category);
+        } catch (NoBooksException e) {
+            view.displayError(e.getMessage());
+        } catch (IOException e) {
+            view.displayError("Failed to communicate with the server. Please try again.");
         }
-
-        return categories;
     }
 
-    private int returnIntegerOrNegativeArgument(String input) {
-        return BookShopValidator.isInteger(input) ? Integer.parseInt(input) : -1;
-    }
-
-    private double returnDoubleOrNegativeArgument(String input) {
-        return BookShopValidator.isDouble(input) ? Double.parseDouble(input) : -1;
-    }
 }

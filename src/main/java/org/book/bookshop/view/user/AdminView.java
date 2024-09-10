@@ -1,5 +1,7 @@
 package org.book.bookshop.view.user;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.book.bookshop.model.OrderItem;
 import org.book.bookshop.showers.AdminOptionsShower;
 import org.book.bookshop.model.Book;
@@ -29,7 +31,7 @@ public class AdminView extends UserView {
         System.out.println();
     }
 
-    public String[] addBook() {
+    public JsonNode addBook() {
         System.out.println("Name of book: ");
         String name = scanner.nextLine().trim();
 
@@ -49,7 +51,14 @@ public class AdminView extends UserView {
         System.out.println("Quantity: ");
         String quantity = scanner.nextLine().trim();
 
-        return new String[] { name, author, price, categoriesString, year, quantity };
+        return new ObjectMapper().createObjectNode()
+                .put("action", "ADD_BOOK")
+                .put("name", name)
+                .put("author", author)
+                .put("price", price)
+                .put("categories", categoriesString)
+                .put("year", year)
+                .put("quantity", quantity);
     }
 
     public String removeBook(List<Book> books) {
