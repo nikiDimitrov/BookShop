@@ -50,7 +50,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User loginUser(String username, String password) throws UsernameNotFoundException, NoUsersException, IncorrectInputException {
+    public User loginUser(String username, String password) throws UsernameNotFoundException, UserNotFoundException, NoUsersException, IncorrectInputException {
         if(userRepository.findAll().isEmpty()) {
             throw new NoUsersException("No users found! Can't log in!");
         }

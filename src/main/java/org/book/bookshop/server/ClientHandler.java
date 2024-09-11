@@ -3,10 +3,7 @@ package org.book.bookshop.server;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.book.bookshop.exceptions.NoBooksException;
-import org.book.bookshop.exceptions.NoOrdersException;
-import org.book.bookshop.exceptions.NoUsersException;
-import org.book.bookshop.exceptions.UserNotFoundException;
+import org.book.bookshop.exceptions.*;
 import org.book.bookshop.helpers.StatusHelper;
 import org.book.bookshop.model.*;
 import org.book.bookshop.service.*;
@@ -155,10 +152,16 @@ public class ClientHandler extends Thread {
 
         }
         catch(UsernameNotFoundException e) {
-            sendFailureResponse("User not found with this username!");
+            sendFailureResponse("User with this username not found!");
+        }
+        catch(UserNotFoundException e) {
+            sendFailureResponse("User was not found!");
         }
         catch(NoUsersException e) {
             sendFailureResponse("No users to log into!");
+        }
+        catch(IncorrectInputException e) {
+            sendFailureResponse("Wrong password!");
         }
     }
 
