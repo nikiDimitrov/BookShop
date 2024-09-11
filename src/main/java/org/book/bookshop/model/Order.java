@@ -22,4 +22,8 @@ public class Order {
         this.user = user;
         status = StatusHelper.getStatusByName("active");
     }
+
+    public Order() {
+
+    }
 }

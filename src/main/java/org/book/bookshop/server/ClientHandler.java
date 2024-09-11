@@ -64,7 +64,7 @@ public class ClientHandler extends Thread {
                         addBook(request);
                         break;
                     case "SHOW_BOOKS":
-                        showAllBooks();
+                        showAllBooks(request);
                         break;
                     case "REMOVE_BOOK":
                         removeBook(request);
@@ -90,6 +90,9 @@ public class ClientHandler extends Thread {
                     case "DISCARD_ORDER":
                         discardOrder(request);
                         break;
+                    case "DELETE_DISCARDED_ORDERS":
+                        deleteDiscardedOrders(request);
+                        break;
                     case "RESTOCK_BOOKS":
                         restockBooks(request);
                         break;
@@ -101,6 +104,9 @@ public class ClientHandler extends Thread {
         }
         catch (IOException e) {
             log.error(e.getMessage());
+        }
+        catch (IllegalArgumentException e) {
+            System.out.println("A client has left the server.\n");
         }
     }
 
@@ -121,6 +127,8 @@ public class ClientHandler extends Thread {
                     .put("role", user.getRole().toString());
 
             out.write(response.toString() + "\n");
+
+            System.out.printf("A new user has registered! Welcome %s %s!\n", user.getRole(), user.getUsername());
         }
         catch(IllegalArgumentException e) {
             sendFailureResponse(e.getMessage());
@@ -142,6 +150,8 @@ public class ClientHandler extends Thread {
                     .put("role", user.getRole().toString());
 
             out.write(response.toString() + "\n");
+
+            System.out.printf("User %s %s has logged in!\n", user.getRole(), user.getUsername());
 
         }
         catch(UsernameNotFoundException e) {
@@ -168,9 +178,9 @@ public class ClientHandler extends Thread {
                     .put("username", user.getUsername())
                     .put("role", user.getRole().toString());
 
-            System.out.printf("Admin %s registered employee %s\n", adminUserName, user.getUsername());
             out.write(response.toString() + "\n");
-            out.flush();
+
+            System.out.printf("Admin %s has registered employee %s.\n", adminUserName, user.getUsername());
         }
         catch(IllegalArgumentException e) {
             JsonNode response = objectMapper.createObjectNode()
@@ -197,7 +207,6 @@ public class ClientHandler extends Thread {
         try {
             Book book = bookService.saveBook(name, author, price, categories, year, quantity);
 
-            System.out.printf("Admin %s added %s\n", adminUserName, book.getName());
             JsonNode response = objectMapper.createObjectNode()
                     .put("status", "success")
                     .put("book_name", book.getName())
@@ -205,7 +214,8 @@ public class ClientHandler extends Thread {
                     .put("quantity", book.getQuantity());
 
             out.write(response.toString() + "\n");
-            out.flush();
+
+            System.out.printf("Admin %s has added book %s by %s.\n", adminUserName, book.getName(), book.getAuthor());
         }
         catch(IllegalArgumentException e) {
             JsonNode response = objectMapper.createObjectNode()
@@ -224,12 +234,12 @@ public class ClientHandler extends Thread {
 
             bookService.deleteBook(book);
 
-            System.out.printf("%s deleted %s by %s\n", adminUserName, book.getName(), book.getAuthor());
-
             JsonNode response = objectMapper.createObjectNode()
                     .put("status", "success");
 
             out.write(response.toString() + "\n");
+
+            System.out.printf("User %s has deleted %s by %s.\n", adminUserName, book.getName(), book.getAuthor());
         }
         catch (Exception e) {
             JsonNode response = objectMapper.createObjectNode()
@@ -240,15 +250,17 @@ public class ClientHandler extends Thread {
         }
     }
 
-    private void showAllBooks() throws IOException {
+    private void showAllBooks(JsonNode request) throws IOException {
         try {
             List<Book> books = bookService.findAllBooks();
             String booksJson = objectMapper.writeValueAsString(books);
+            String username = request.get("user").asText();
 
             JsonNode response = objectMapper.createObjectNode()
                     .put("status", "success")
                     .put("books", booksJson);
 
+            System.out.printf("User %s requested all books.\n", username);
             out.write(response.toString() + "\n");
         }
         catch (NoBooksException e) {
@@ -260,29 +272,12 @@ public class ClientHandler extends Thread {
         }
     }
 
-    private List<Category> getCategoriesByNames(String categoriesString) {
-        List<Category> categories = new ArrayList<>();
-
-        String[] categoriesNames = categoriesString.split(SEPARATOR);
-
-        for(String categoryName : categoriesNames) {
-            Category category = categoryService.getCategoryByName(categoryName.toLowerCase());
-
-            if(category == null){
-                category = categoryService.saveCategory(categoryName.toLowerCase());
-            }
-            categories.add(category);
-        }
-
-        return categories;
-    }
-
     private void showAllUsers(JsonNode request) throws IOException {
         try {
             List<User> users = userService.findAllUsers();
             String usersJson = objectMapper.writeValueAsString(users);
 
-            System.out.printf("Admin %s requested all users.%n", request.get("admin").asText());
+            System.out.printf("Admin %s viewed all users.\n", request.get("admin").asText());
 
             JsonNode response = objectMapper.createObjectNode()
                     .put("status", "success")
@@ -300,7 +295,7 @@ public class ClientHandler extends Thread {
 
     private void showAllOrders(JsonNode request) throws IOException {
         try {
-            List<Order> orders = orderService.findAllOrders();  // Retrieve all orders
+            List<Order> orders = orderService.findAllOrders();
             ObjectNode response = objectMapper.createObjectNode().put("status", "success");
 
             String ordersJson = objectMapper.writeValueAsString(orders);
@@ -312,7 +307,7 @@ public class ClientHandler extends Thread {
                 response.put("order_items_" + order.getId(), orderItemsJson);
             }
 
-            System.out.printf("Admin %s requested all orders.%n", request.get("admin").asText());
+            System.out.printf("Admin %s viewed all orders.\n", request.get("user").asText());
 
             out.write(response + "\n");
 
@@ -351,6 +346,9 @@ public class ClientHandler extends Thread {
         if (processedOrder != null) {
             JsonNode response = objectMapper.createObjectNode().put("status", "success");
             out.write(response.toString() + "\n");
+
+            System.out.printf("User %s made an order.\n", user.getUsername());
+
         } else {
             JsonNode response = objectMapper.createObjectNode()
                     .put("status", "failure")
@@ -362,6 +360,7 @@ public class ClientHandler extends Thread {
     private void fetchOrders(JsonNode request) throws IOException {
         String statusName = request.get("status").asText();
         Status status = StatusHelper.getStatusByName(statusName);
+        String username = request.get("user").asText();
 
         try {
             List<Order> orders = orderService.findOrdersByStatus(status);
@@ -382,6 +381,8 @@ public class ClientHandler extends Thread {
 
             out.write(response + "\n");
 
+            System.out.printf("Employee %s started approving orders.\n", username);
+
         } catch (NoOrdersException e) {
             sendFailureResponse("Error fetching orders: " + e.getMessage());
         }
@@ -389,19 +390,17 @@ public class ClientHandler extends Thread {
 
     private void viewOrders(JsonNode request) throws IOException {
         String username = request.get("user").asText();
+        User user = userService.loadUserByUsername(username);
+
+        ObjectNode response = objectMapper.createObjectNode();
 
         try {
-            User user = userService.loadUserByUsername(username);
+            response.put("status", "success");
 
             Status activeStatus = StatusHelper.getStatusByName("active");
             List<Order> activeOrders = orderService.findOrdersByUserAndStatus(user, activeStatus);
-
-            Status discardedStatus = StatusHelper.getStatusByName("discarded");
-            List<Order> discardedOrders = orderService.findOrdersByUserAndStatus(user, discardedStatus);
-
-            ObjectNode response = objectMapper.createObjectNode().put("status", "success");
-
             String activeOrdersJson = objectMapper.writeValueAsString(activeOrders);
+
             response.put("active_orders", activeOrdersJson);
 
             for (Order order : activeOrders) {
@@ -409,8 +408,16 @@ public class ClientHandler extends Thread {
                 String orderItemsJson = objectMapper.writeValueAsString(orderItems);
                 response.put("order_items_" + order.getId(), orderItemsJson);
             }
+        }
+        catch (NoOrdersException e) {
+                response.put("active_orders", "No active orders found!");
+            }
 
+        try {
+            Status discardedStatus = StatusHelper.getStatusByName("discarded");
+            List<Order> discardedOrders = orderService.findOrdersByUserAndStatus(user, discardedStatus);
             String discardedOrdersJson = objectMapper.writeValueAsString(discardedOrders);
+
             response.put("discarded_orders", discardedOrdersJson);
 
             for (Order discardedOrder : discardedOrders) {
@@ -418,16 +425,20 @@ public class ClientHandler extends Thread {
                 String orderItemsJson = objectMapper.writeValueAsString(orderItems);
                 response.put("order_items_" + discardedOrder.getId(), orderItemsJson);
             }
-
-            out.write(response + "\n");
-        } catch (Exception e) {
-            sendFailureResponse("Failed to fetch orders: " + e.getMessage());
         }
+        catch (NoOrdersException e) {
+            response.put("discarded_orders", "No discarded orders found!");
+        }
+
+        out.write(response + "\n");
+
+        System.out.printf("Client %s has viewed his approved and discarded orders.\n", user.getUsername());
     }
 
 
     private void approveOrder(JsonNode request) throws IOException {
         UUID orderId = UUID.fromString(request.get("order_id").asText());
+        String username = request.get("user").asText();
 
         try {
             Order order = orderService.findById(orderId);
@@ -444,6 +455,7 @@ public class ClientHandler extends Thread {
             }
 
             sendSuccessResponse("Order approved successfully.");
+            System.out.printf("Order %s has been approved by employee %s.\n", orderId, username);
 
         } catch (Exception e) {
             sendFailureResponse("Failed to approve order: " + e.getMessage());
@@ -452,6 +464,7 @@ public class ClientHandler extends Thread {
 
     private void discardOrder(JsonNode request) throws IOException {
         UUID orderId = UUID.fromString(request.get("order_id").asText());
+        String username = request.get("user").asText();
 
         try {
             Order order = orderService.findById(orderId);
@@ -464,15 +477,42 @@ public class ClientHandler extends Thread {
             orderService.changeOrderStatus(order, discardedStatus);
 
             sendSuccessResponse("Order discarded successfully.");
+            System.out.printf("Order %s has been discarded by employee %s.\n", orderId, username);
 
         } catch (Exception e) {
             sendFailureResponse("Failed to discard order: " + e.getMessage());
         }
     }
 
+    private void deleteDiscardedOrders(JsonNode request) throws IOException {
+        String username = request.get("user").asText();
+        String discardedOrdersJson = request.get("orders").asText();
+
+        List<Order> discardedOrders = objectMapper.readValue(discardedOrdersJson, objectMapper.getTypeFactory().constructCollectionType(List.class, Order.class)
+        );
+
+        try {
+            orderService.deleteOrders(discardedOrders);
+
+            ObjectNode response = objectMapper.createObjectNode()
+                    .put("status", "success")
+                    .put("message", "Discarded orders deleted successfully.");
+            out.write(response.toString() + "\n");
+
+            System.out.printf("Client %s's discarded orders were automatically deleted.\n", username);
+
+        } catch (Exception e) {
+            ObjectNode response = objectMapper.createObjectNode()
+                    .put("status", "failure")
+                    .put("message", "Failed to delete discarded orders: " + e.getMessage());
+            out.write(response.toString() + "\n");
+        }
+    }
+
     private void restockBooks(JsonNode request) throws IOException {
         try {
             JsonNode booksWithQuantities = request.get("books_with_quantities");
+            String username = request.get("user").asText();
 
             Map<Book, Integer> booksToRestock = new HashMap<>();
             booksWithQuantities.fieldNames().forEachRemaining(bookId -> {
@@ -481,12 +521,12 @@ public class ClientHandler extends Thread {
                 booksToRestock.put(book, quantity);
             });
 
-            // Process the restocking of each book
             for (Map.Entry<Book, Integer> entry : booksToRestock.entrySet()) {
                 bookService.restockBook(entry.getKey(), entry.getValue());
             }
 
             sendSuccessResponse("Books restocked successfully.");
+            System.out.printf("Employee %s restocked the inventory.\n", username);
 
         } catch (NoBooksException e) {
             sendFailureResponse("Failed to restock books: " + e.getMessage());
@@ -507,6 +547,20 @@ public class ClientHandler extends Thread {
         out.write(response.toString() + "\n");
     }
 
+    private List<Category> getCategoriesByNames(String categoriesString) {
+        List<Category> categories = new ArrayList<>();
 
+        String[] categoriesNames = categoriesString.split(SEPARATOR);
 
+        for(String categoryName : categoriesNames) {
+            Category category = categoryService.getCategoryByName(categoryName.toLowerCase());
+
+            if(category == null){
+                category = categoryService.saveCategory(categoryName.toLowerCase());
+            }
+            categories.add(category);
+        }
+
+        return categories;
+    }
 }

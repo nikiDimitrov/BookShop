@@ -4,10 +4,9 @@ import org.book.bookshop.exceptions.NoBooksException;
 import org.book.bookshop.helpers.BookShopValidator;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
+import org.book.bookshop.model.Order;
 import org.book.bookshop.model.OrderItem;
-import org.book.bookshop.repository.BookRepository;
-import org.book.bookshop.repository.BooksCategoriesRepository;
-import org.book.bookshop.repository.CategoryRepository;
+import org.book.bookshop.repository.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,11 +18,15 @@ public class BookService {
     private final BookRepository bookRepository;
     private final CategoryRepository categoryRepository;
     private final BooksCategoriesRepository booksCategoriesRepository;
+    private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
 
     public BookService() {
         this.bookRepository = new BookRepository();
         this.categoryRepository = new CategoryRepository();
         this.booksCategoriesRepository = new BooksCategoriesRepository();
+        this.orderRepository = new OrderRepository();
+        this.orderItemRepository = new OrderItemRepository();
     }
 
     public List<Book> findAllBooks() throws NoBooksException {
@@ -72,13 +75,24 @@ public class BookService {
     }
 
     public void deleteBook(Book book) {
+        List<Order> ordersOfBook = orderRepository.findByBookId(book.getId());
+
+        for (Order order : ordersOfBook) {
+            List<OrderItem> orderItems = orderItemRepository.findByOrderId(order.getId());
+            orderItemRepository.deleteInBatch(orderItems);
+        }
+
+        orderRepository.deleteAllInBatch(ordersOfBook);
+
         booksCategoriesRepository.deleteBookAndCategories(book);
 
         CompletableFuture<Void> deleteCategories = CompletableFuture.runAsync(
-                () -> categoryRepository.deleteBatch(book.getCategories()));
+                () -> categoryRepository.deleteBatch(book.getCategories())
+        );
 
         CompletableFuture<Void> deleteBook = CompletableFuture.runAsync(
-                () -> bookRepository.delete(book));
+                () -> bookRepository.delete(book)
+        );
 
         CompletableFuture<Void> allDeletes = CompletableFuture.allOf(deleteCategories, deleteBook);
 
@@ -87,5 +101,6 @@ public class BookService {
             return null;
         });
     }
+
 
 }

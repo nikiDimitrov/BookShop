@@ -200,12 +200,12 @@ public class AdminController extends UserController {
             String status = response.get("status").asText();
 
             if (status.equals("success")) {
-                String ordersJson = response.get("orders").toString();
+                String ordersJson = response.get("orders").asText();
                 List<Order> orders = objectMapper.readValue(ordersJson, objectMapper.getTypeFactory().constructCollectionType(List.class, Order.class));
 
                 Map<Order, List<OrderItem>> ordersWithItems = new HashMap<>();
                 for (Order order : orders) {
-                    String orderItemsJson = response.get("order_items_" + order.getId()).toString();
+                    String orderItemsJson = response.get("order_items_" + order.getId()).asText();
                     List<OrderItem> orderItems = objectMapper.readValue(orderItemsJson, objectMapper.getTypeFactory().constructCollectionType(List.class, OrderItem.class));
                     ordersWithItems.put(order, orderItems);
                 }
@@ -215,7 +215,7 @@ public class AdminController extends UserController {
                 view.displayError(response.get("message").asText());
             }
         } catch (IOException e) {
-            view.displayError("Failed to fetch orders from server.");
+            view.displayError("Failed to communicate with server!");
         }
     }
 

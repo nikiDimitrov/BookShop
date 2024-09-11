@@ -1,5 +1,6 @@
 package org.book.bookshop.server;
 
+import org.book.bookshop.helpers.DatabaseCreator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +33,11 @@ public class BookShopServer {
 
     public static void main(String[] args) {
         try {
+            DatabaseCreator creator = new DatabaseCreator();
+            creator.createTableFromScript("tables.sql");
+
             BookShopServer server = new BookShopServer(3333);
+            
             server.start();
         }
         catch (IOException e) {

@@ -98,6 +98,8 @@ public class ClientController extends UserController {
 
     public void viewOrders() {
         try {
+            Map<Order, List<OrderItem>> ordersWithItems = new HashMap<>();
+
             JsonNode request = objectMapper.createObjectNode()
                     .put("action", "VIEW_ORDERS")
                     .put("user", user.getUsername());
@@ -109,38 +111,44 @@ public class ClientController extends UserController {
             String status = response.get("status").asText();
 
             if (status.equals("success")) {
-                String activeOrdersJson = response.get("active_orders").toString();
-                List<Order> activeOrders = objectMapper.readValue(activeOrdersJson, objectMapper.getTypeFactory().constructCollectionType(List.class, Order.class));
+                String activeOrdersJson = response.get("active_orders").asText();
+                if (!activeOrdersJson.equals("No active orders found!")) {
+                    List<Order> activeOrders = objectMapper.readValue(activeOrdersJson, objectMapper.getTypeFactory().constructCollectionType(List.class, Order.class));
 
-                Map<Order, List<OrderItem>> ordersWithItems = new HashMap<>();
-                for (Order order : activeOrders) {
-                    String orderItemsJson = response.get("order_items_" + order.getId()).toString();
-                    List<OrderItem> orderItems = objectMapper.readValue(orderItemsJson, objectMapper.getTypeFactory().constructCollectionType(List.class, OrderItem.class));
-                    ordersWithItems.put(order, orderItems);
+                    for (Order order : activeOrders) {
+                        String orderItemsJson = response.get("order_items_" + order.getId()).asText();
+                        List<OrderItem> orderItems = objectMapper.readValue(orderItemsJson, objectMapper.getTypeFactory().constructCollectionType(List.class, OrderItem.class));
+                        ordersWithItems.put(order, orderItems);
+                    }
+                    view.viewActiveOrders(ordersWithItems);
+                } else {
+                    view.displayError(activeOrdersJson);
                 }
 
-                view.viewActiveOrders(ordersWithItems);
+                String discardedOrdersJson = response.get("discarded_orders").asText();
+                if (!discardedOrdersJson.equals("No discarded orders found!")) {
+                    List<Order> discardedOrders = objectMapper.readValue(discardedOrdersJson, objectMapper.getTypeFactory().constructCollectionType(List.class, Order.class));
 
-                String discardedOrdersJson = response.get("discarded_orders").toString();
-                List<Order> discardedOrders = objectMapper.readValue(discardedOrdersJson, objectMapper.getTypeFactory().constructCollectionType(List.class, Order.class));
+                    ordersWithItems.clear();
+                    for (Order discardedOrder : discardedOrders) {
+                        String orderItemsJson = response.get("order_items_" + discardedOrder.getId()).asText();
+                        List<OrderItem> orderItems = objectMapper.readValue(orderItemsJson, objectMapper.getTypeFactory().constructCollectionType(List.class, OrderItem.class));
+                        ordersWithItems.put(discardedOrder, orderItems);
+                    }
 
-                ordersWithItems.clear();
-                for (Order discardedOrder : discardedOrders) {
-                    String orderItemsJson = response.get("order_items_" + discardedOrder.getId()).toString();
-                    List<OrderItem> orderItems = objectMapper.readValue(orderItemsJson, objectMapper.getTypeFactory().constructCollectionType(List.class, OrderItem.class));
-                    ordersWithItems.put(discardedOrder, orderItems);
+                    view.viewDiscardedOrders(ordersWithItems);
+                    deleteDiscardedOrders(discardedOrders);
+                } else {
+                    view.displayError(discardedOrdersJson);
                 }
-
-                view.viewDiscardedOrders(ordersWithItems);
-
             } else {
                 view.displayError(response.get("message").asText());
             }
-
         } catch (IOException e) {
             view.displayError("Failed to communicate with the server.");
         }
     }
+
 
 
     private int[] parseIndexes(String indexArgument) {
@@ -206,5 +214,24 @@ public class ClientController extends UserController {
         return orderItems.stream()
                 .sorted(Comparator.comparing(o -> o.getBook().getName()))
                 .toList();
+    }
+
+    private void deleteDiscardedOrders(List<Order> discardedOrders) throws IOException {
+        String discardedOrdersJson = objectMapper.writeValueAsString(discardedOrders);
+
+        JsonNode deleteRequest = objectMapper.createObjectNode()
+                .put("action", "DELETE_DISCARDED_ORDERS")
+                .put("user", user.getUsername())
+                .put("orders", discardedOrdersJson);
+
+        out.write(deleteRequest.toString() + "\n");
+        out.flush();
+
+        JsonNode response = objectMapper.readTree(in.readLine());
+        if (response.get("status").asText().equals("success")) {
+            view.displaySuccessfullyDeletedDiscardedOrders();
+        } else {
+            view.displayError("Failed to delete discarded orders: " + response.get("message").asText());
+        }
     }
 }

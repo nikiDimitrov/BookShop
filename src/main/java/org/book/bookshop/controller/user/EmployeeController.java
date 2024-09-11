@@ -58,7 +58,7 @@ public class EmployeeController extends UserController {
             String status = response.get("status").asText();
 
             if (status.equals("success")) {
-                String ordersJson = response.get("orders").toString();
+                String ordersJson = response.get("orders").asText();
                 List<Order> orders = objectMapper.readValue(ordersJson, objectMapper.getTypeFactory().constructCollectionType(List.class, Order.class));
 
                 if (orders.isEmpty()) {
@@ -67,7 +67,7 @@ public class EmployeeController extends UserController {
                 }
 
                 for (Order order : orders) {
-                    String orderItemsJson = response.get("order_items_" + order.getId()).toString();
+                    String orderItemsJson = response.get("order_items_" + order.getId()).asText();
                     List<OrderItem> orderItems = objectMapper.readValue(orderItemsJson, objectMapper.getTypeFactory().constructCollectionType(List.class, OrderItem.class));
 
                     String answer = view.askForApprovalOfOrder(order, orderItems);
@@ -152,20 +152,15 @@ public class EmployeeController extends UserController {
 
     public void approveOrder(Order order) {
         try {
-            // Prepare the JSON request to approve the order
             JsonNode approveRequest = objectMapper.createObjectNode()
                     .put("action", "APPROVE_ORDER")
                     .put("order_id", String.valueOf(order.getId()))
                     .put("user", user.getUsername());
-
-            // Send the request to the server
             out.write(approveRequest.toString() + "\n");
             out.flush();
 
-            // Read the response from the server
             JsonNode response = objectMapper.readTree(in.readLine());
 
-            // Check if the approval was successful
             if (response.get("status").asText().equals("success")) {
                 view.finishedApprovingOrder();
             } else {
@@ -179,7 +174,6 @@ public class EmployeeController extends UserController {
 
     private void discardOrder(Order order) {
         try {
-            // Prepare the discard request
             JsonNode discardRequest = objectMapper.createObjectNode()
                     .put("action", "DISCARD_ORDER")
                     .put("order_id", String.valueOf(order.getId()))
@@ -188,7 +182,6 @@ public class EmployeeController extends UserController {
             out.write(discardRequest.toString() + "\n");
             out.flush();
 
-            // Process the server response
             JsonNode response = objectMapper.readTree(in.readLine());
             if (response.get("status").asText().equals("success")) {
                 view.finishDiscardingOrder();

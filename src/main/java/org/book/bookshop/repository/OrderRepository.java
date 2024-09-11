@@ -69,6 +69,36 @@ public class OrderRepository {
         return Optional.empty();
     }
 
+    public List<Order> findByBookId(UUID bookId) {
+        List<Order> orders = new ArrayList<>();
+        String sql = "SELECT o.id AS order_id, o.user_id AS order_user_id, o.total_price AS order_total_price, " +
+                "s.id AS status_id, s.name AS status_name, " +
+                "u.id AS user_id, u.username AS user_username, u.email AS user_email, u.password AS user_password, u.role AS user_role " +
+                "FROM orders AS o " +
+                "JOIN order_items AS oi ON o.id = oi.order_id " +
+                "JOIN books AS b ON oi.book_id = b.id " +
+                "JOIN users AS u ON o.user_id = u.id " +
+                "JOIN statuses as s ON o.status_id = s.id " +
+                "WHERE b.id = ?";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setObject(1, bookId);
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                Order order = mapResultSetToOrder(resultSet);
+                orders.add(order);
+            }
+        } catch (SQLException e) {
+            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
+        }
+
+        return orders;
+    }
+
+
     public List<Order> findByStatus(Status status) {
         List<Order> orders = new ArrayList<>();
 
@@ -135,7 +165,7 @@ public class OrderRepository {
         return null;
     }
 
-    public Order updateStatus(Order order, Status status) {
+    public void updateStatus(Order order, Status status) {
         String sql = "UPDATE orders SET status_id = ? WHERE id = ?";
 
         try(Connection connection = DatabaseConnection.getConnection();
@@ -146,13 +176,12 @@ public class OrderRepository {
 
             statement.executeUpdate();
 
-            return findById(order.getId()).stream().findFirst().orElse(null);
+            findById(order.getId()).stream().findFirst();
         }
         catch(SQLException e){
             DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
-        return null;
     }
 
     public Order save(Order order) {
