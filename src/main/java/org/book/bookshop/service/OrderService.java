@@ -26,7 +26,7 @@ public class OrderService {
         return orderRepository.findAll();
     }
 
-    public List<Order> findOrdersByUserAndStatus(User user, Status status) throws NoOrdersException {
+    public List<Order> findOrdersByUserAndStatus(User user, Status status) {
         List<Order> orders = orderRepository.findByUserAndStatus(user, status);
 
         if(orders.isEmpty()) {

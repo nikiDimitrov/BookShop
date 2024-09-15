@@ -179,20 +179,6 @@ public class EmployeeController extends UserController {
         }
     }
 
-
-
-    private int[] parseIndexes(String indexArgument) {
-        return Arrays.stream(indexArgument.split(SEPARATOR))
-                .mapToInt(Integer::parseInt)
-                .toArray();
-    }
-
-    private int[] parseQuantities(String quantityArgument) {
-        return Arrays.stream(quantityArgument.split(SEPARATOR))
-                .mapToInt(Integer::parseInt)
-                .toArray();
-    }
-
     private Map<Book, Integer> prepareBooksWithAddedQuantities(List<Book> books, int[] bookIndexes, int[] quantities) {
         Map<Book, Integer> booksWithAddedQuantities = new HashMap<>();
 
@@ -245,4 +231,17 @@ public class EmployeeController extends UserController {
             }
         }
     }
+
+    private int[] parseIndexes(String indexArgument) {
+        return Arrays.stream(indexArgument.split(SEPARATOR))
+                .mapToInt(Integer::parseInt)
+                .toArray();
+    }
+
+    private int[] parseQuantities(String quantityArgument) {
+        return Arrays.stream(quantityArgument.split(SEPARATOR))
+                .mapToInt(Integer::parseInt)
+                .toArray();
+    }
+
 }

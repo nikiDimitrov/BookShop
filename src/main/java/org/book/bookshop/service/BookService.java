@@ -61,7 +61,7 @@ public class BookService {
         return savedBook;
     }
 
-    public void updateBookQuantity(OrderItem orderItem) {
+    public synchronized void updateBookQuantity(OrderItem orderItem) {
         Book book = orderItem.getBook();
         int newQuantity = book.getQuantity() - orderItem.getQuantity();
         book.setQuantity(newQuantity);
@@ -74,7 +74,7 @@ public class BookService {
         bookRepository.updateQuantity(book, newQuantity);
     }
 
-    public void deleteBook(Book book) {
+    public synchronized void deleteBook(Book book) {
         List<Order> ordersOfBook = orderRepository.findByBookId(book.getId());
 
         for (Order order : ordersOfBook) {
