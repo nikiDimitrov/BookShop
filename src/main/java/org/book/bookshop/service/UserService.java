@@ -6,8 +6,6 @@ import org.book.bookshop.helpers.BookShopValidator;
 import org.book.bookshop.model.Role;
 import org.book.bookshop.model.User;
 import org.book.bookshop.repository.UserRepository;
-import org.book.bookshop.exceptions.IncorrectInputException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.List;
@@ -23,7 +21,7 @@ public class UserService {
         this.encoder = new BCryptPasswordEncoder(16);
     }
 
-    public User registerUser(String username, String email, String password, Role role) throws IllegalArgumentException {
+    public User registerUser(String username, String email, String password, Role role) {
         if(userRepository.findByUsername(username).isPresent()
                 || userRepository.findByEmail(email).isPresent()) {
             throw new IllegalArgumentException("User with that username or email already exists!");
@@ -50,7 +48,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User loginUser(String username, String password) throws UsernameNotFoundException, UserNotFoundException, NoUsersException, IncorrectInputException {
+    public User loginUser(String username, String password) {
         if(userRepository.findAll().isEmpty()) {
             throw new NoUsersException("No users found! Can't log in!");
         }
@@ -61,7 +59,7 @@ public class UserService {
         }
 
         if(!encoder.matches(password, user.getPassword())){
-            throw new IncorrectInputException(String.format("Password for %s is wrong!", username));
+            throw new IllegalArgumentException(String.format("Password for %s is wrong!", username));
         }
 
         return user;

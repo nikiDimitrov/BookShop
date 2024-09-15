@@ -1,19 +1,24 @@
-package org.book.bookshop.controller.user;
+package org.book.bookshop.client.user;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.User;
 import org.book.bookshop.view.user.AdminView;
 import org.book.bookshop.view.user.LoginView;
 import org.book.bookshop.view.user.UserView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public abstract class UserController {
+    private final Logger log = LoggerFactory.getLogger(UserController.class);
 
     protected final LoginView loginView;
     protected final ObjectMapper objectMapper;
@@ -55,10 +60,21 @@ public abstract class UserController {
                 return null;
             }
         } catch (IOException e) {
-            view.displayError("Error while communicating with the server.");
+            view.displayError("Error while getting all books from server. Please try again.");
+            log.error("Error while getting all books from server: {}", e.getMessage());
         }
 
         return null;
     }
 
+    protected void getBooksWithQuantitiesAndRequest(Map<Book, Integer> booksWithQuantities, ObjectNode orderRequest) throws IOException {
+        ObjectNode booksNode = objectMapper.createObjectNode();
+        for (Map.Entry<Book, Integer> entry : booksWithQuantities.entrySet()) {
+            booksNode.put(String.valueOf(entry.getKey().getId()), entry.getValue());
+        }
+        orderRequest.set("books_with_quantities", booksNode);
+
+        out.write(orderRequest + "\n");
+        out.flush();
+    }
 }

@@ -1,10 +1,12 @@
-package org.book.bookshop.controller.user;
+package org.book.bookshop.client.user;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.book.bookshop.exceptions.NoBooksException;
 import org.book.bookshop.model.*;
 import org.book.bookshop.view.user.AdminView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -15,6 +17,7 @@ import java.util.Map;
 
 public class AdminController extends UserController {
 
+    private final Logger log = LoggerFactory.getLogger(AdminController.class);
     private final AdminView view;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -79,8 +82,8 @@ public class AdminController extends UserController {
                 String error = response.get("message").asText();
                 loginView.displayError(error);
             }
-        }
-        catch(IOException e) {
+        } catch(IOException e) {
+            log.error(String.format("Communication failure with server: %s", e.getMessage()));
             view.displayError("Failed to communicate with the server. Please try again.");
         }
     }
@@ -94,7 +97,6 @@ public class AdminController extends UserController {
         String categories = bookDetails.get("categories").asText();
         String yearString = bookDetails.get("year").asText();
         String quantityString = bookDetails.get("quantity").asText();
-
 
         JsonNode addingBookRequest = objectMapper.createObjectNode()
                 .put("action", "ADD_BOOK")
@@ -117,13 +119,13 @@ public class AdminController extends UserController {
             if(status.equals("success")) {
                 view.displayAddingBookSuccess();
             }
-            else if(status.equals("failure")) {
+            else {
                 String error = response.get("message").asText();
                 view.displayError(error);
             }
-        }
-        catch (IOException e){
-            view.displayError("Failed to communicate with the server. Please try again.");
+        } catch (IOException e){
+            log.error(String.format("Failed to add book to server: %s", e.getMessage()));
+            view.displayError("Failed to add book to server. Please try again.");
         }
 
     }
@@ -151,13 +153,15 @@ public class AdminController extends UserController {
 
             if (response.get("status").asText().equals("success")) {
                 view.displayDeletingBookSuccess();
-            } else {
+            }
+            else {
                 view.displayError(response.get("message").asText());
             }
         } catch (RuntimeException e) {
             view.displayError("Incorrect argument!");
         } catch (IOException e) {
-            view.displayError("Failed to communicate with the server. Please try again.");
+            view.displayError("Failed to remove book from server. Please try again.");
+            log.error(String.format("Failed to remove book from server: %s", e.getMessage()));
         }
     }
 
@@ -178,11 +182,13 @@ public class AdminController extends UserController {
                 String usersJson = response.get("users").asText();
                 List<User> users = objectMapper.readValue(usersJson, objectMapper.getTypeFactory().constructCollectionType(List.class, User.class));
                 view.showAllUsers(users);
-            } else {
+            }
+            else {
                 view.displayError(response.get("message").asText());
             }
         } catch (IOException e) {
-            view.displayError("Failed to fetch users from server.");
+            view.displayError("Failed to fetch users from server. Please try again.");
+            log.error("Failed to fetch users from server: {}", e.getMessage());
         }
     }
 
@@ -200,25 +206,16 @@ public class AdminController extends UserController {
             String status = response.get("status").asText();
 
             if (status.equals("success")) {
-                String ordersJson = response.get("orders").asText();
-                List<Order> orders = objectMapper.readValue(ordersJson, objectMapper.getTypeFactory().constructCollectionType(List.class, Order.class));
-
-                Map<Order, List<OrderItem>> ordersWithItems = new HashMap<>();
-                for (Order order : orders) {
-                    String orderItemsJson = response.get("order_items_" + order.getId()).asText();
-                    List<OrderItem> orderItems = objectMapper.readValue(orderItemsJson, objectMapper.getTypeFactory().constructCollectionType(List.class, OrderItem.class));
-                    ordersWithItems.put(order, orderItems);
-                }
-
-                view.showAllOrders(ordersWithItems);
-            } else {
+               fetchOrdersFromResponseAndView(response);
+            }
+            else {
                 view.displayError(response.get("message").asText());
             }
         } catch (IOException e) {
-            view.displayError("Failed to communicate with server!");
+            view.displayError("Failed to show all orders from the server. Please try again.");
+            log.error("Failed to show all orders from the server. {}", e.getMessage());
         }
     }
-
 
     public void showAllBooks(boolean showCategories) {
         try {
@@ -229,8 +226,22 @@ public class AdminController extends UserController {
         } catch (NoBooksException e) {
             view.displayError(e.getMessage());
         } catch (IOException e) {
-            view.displayError("Failed to communicate with the server. Please try again.");
+            view.displayError("Failed to fetch books from the server. Please try again.");
+            log.error("Failed to fetch books from the server: {}", e.getMessage());
         }
     }
 
+    private void fetchOrdersFromResponseAndView(JsonNode response) throws IOException {
+        String ordersJson = response.get("orders").asText();
+        List<Order> orders = objectMapper.readValue(ordersJson, objectMapper.getTypeFactory().constructCollectionType(List.class, Order.class));
+
+        Map<Order, List<OrderItem>> ordersWithItems = new HashMap<>();
+        for (Order order : orders) {
+            String orderItemsJson = response.get("order_items_" + order.getId()).asText();
+            List<OrderItem> orderItems = objectMapper.readValue(orderItemsJson, objectMapper.getTypeFactory().constructCollectionType(List.class, OrderItem.class));
+            ordersWithItems.put(order, orderItems);
+        }
+
+        view.showAllOrders(ordersWithItems);
+    }
 }

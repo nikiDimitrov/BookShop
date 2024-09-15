@@ -1,10 +1,12 @@
 package org.book.bookshop.server;
 
 import org.book.bookshop.helpers.DatabaseCreator;
+import org.book.bookshop.helpers.IPGetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -13,7 +15,7 @@ public class BookShopServer {
     private final ServerSocket serverSocket;
 
     public BookShopServer(int port) throws IOException {
-        serverSocket = new ServerSocket(port);
+        serverSocket = new ServerSocket(port, 50, InetAddress.getByName("0.0.0.0"));
     }
 
     public void start() {
@@ -33,12 +35,24 @@ public class BookShopServer {
 
     public static void main(String[] args) {
         try {
-            DatabaseCreator creator = new DatabaseCreator();
-            creator.createTableFromScript("tables.sql");
+            String publicIP = IPGetter.getIp();
 
-            BookShopServer server = new BookShopServer(3333);
-            
-            server.start();
+            if(publicIP.isEmpty()) {
+                System.out.println("Can't get IP address... Exiting...");
+            }
+            else {
+                System.out.println("Server public IP: " + publicIP);
+                DatabaseCreator creator = new DatabaseCreator();
+                boolean success = creator.createTableFromScript("tables.sql");
+
+                if(success) {
+                    BookShopServer server = new BookShopServer(3333);
+                    server.start();
+                }
+                else {
+                    System.out.println("Exiting...");
+                }
+            }
         }
         catch (IOException e) {
             log.error(e.getMessage());

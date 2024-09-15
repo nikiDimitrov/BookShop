@@ -19,7 +19,6 @@ public class ClientHandler extends Thread {
     private static final String SEPARATOR = ", *";
 
     private static final Logger log = LoggerFactory.getLogger(ClientHandler.class);
-    private BufferedReader in;
     private BufferedWriter out;
     private final Socket clientSocket;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -36,7 +35,7 @@ public class ClientHandler extends Thread {
 
     public void run() {
         try {
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 
             String requestString = in.readLine();
@@ -150,17 +149,13 @@ public class ClientHandler extends Thread {
 
             System.out.printf("User %s %s has logged in!\n", user.getRole(), user.getUsername());
 
-        }
-        catch(UsernameNotFoundException e) {
+        } catch(UsernameNotFoundException e) {
             sendFailureResponse("User with this username not found!");
-        }
-        catch(UserNotFoundException e) {
+        } catch (UserNotFoundException e) {
             sendFailureResponse("User was not found!");
-        }
-        catch(NoUsersException e) {
+        } catch(NoUsersException e) {
             sendFailureResponse("No users to log into!");
-        }
-        catch(IncorrectInputException e) {
+        } catch(IllegalArgumentException e) {
             sendFailureResponse("Wrong password!");
         }
     }
@@ -244,7 +239,7 @@ public class ClientHandler extends Thread {
 
             System.out.printf("User %s has deleted %s by %s.\n", adminUserName, book.getName(), book.getAuthor());
         }
-        catch (Exception e) {
+        catch (IOException e) {
             JsonNode response = objectMapper.createObjectNode()
                     .put("status", "failure")
                     .put("message", e.getMessage());

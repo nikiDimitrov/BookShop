@@ -1,10 +1,12 @@
-package org.book.bookshop.controller.user;
+package org.book.bookshop.client.user;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.book.bookshop.exceptions.NoBooksException;
 import org.book.bookshop.model.*;
 import org.book.bookshop.view.user.EmployeeView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -12,6 +14,8 @@ import java.io.IOException;
 import java.util.*;
 
 public class EmployeeController extends UserController {
+
+    private final static Logger log = LoggerFactory.getLogger(EmployeeController.class);
 
     private final EmployeeView view;
 
@@ -58,30 +62,15 @@ public class EmployeeController extends UserController {
             String status = response.get("status").asText();
 
             if (status.equals("success")) {
-                String ordersJson = response.get("orders").asText();
-                List<Order> orders = objectMapper.readValue(ordersJson, objectMapper.getTypeFactory().constructCollectionType(List.class, Order.class));
-
-                if (orders.isEmpty()) {
-                    view.noOrdersFound();
-                    return;
-                }
-
-                for (Order order : orders) {
-                    String orderItemsJson = response.get("order_items_" + order.getId()).asText();
-                    List<OrderItem> orderItems = objectMapper.readValue(orderItemsJson, objectMapper.getTypeFactory().constructCollectionType(List.class, OrderItem.class));
-
-                    String answer = view.askForApprovalOfOrder(order, orderItems);
-                    if ("y".equalsIgnoreCase(answer)) {
-                        approveOrder(order);
-                    } else {
-                        discardOrder(order);
-                    }
-                }
-            } else {
-                view.displayError(response.get("message").asText());
+                fetchOrdersAndCheck(response);
             }
+            else {
+                view.displayError(response.get("failure").asText());
+            }
+
         } catch (IOException e) {
-            view.displayError("Failed to communicate with the server.");
+            view.displayError("Can't send approval of order to server. Try again.");
+            log.error("Can't send approval of order to server: {}", e.getMessage());
         }
     }
 
@@ -105,7 +94,8 @@ public class EmployeeController extends UserController {
         } catch (NoBooksException e) {
             view.displayError("No books to restock!");
         } catch (IOException e) {
-            view.displayError("Failed to communicate with the server.");
+            view.displayError("Failed to send restocking of books to server. Please try again.");
+            log.error("Failed to send restocking of books to server: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
             view.displayError("Incorrect arguments!");
         }
@@ -116,15 +106,8 @@ public class EmployeeController extends UserController {
                 .put("action", "RESTOCK_BOOKS")
                 .put("user", user.getUsername());
 
-        ObjectNode booksNode = objectMapper.createObjectNode();
-        for (Map.Entry<Book, Integer> entry : booksWithAddedQuantities.entrySet()) {
-            booksNode.put(String.valueOf(entry.getKey().getId()), entry.getValue());
-        }
-        restockRequest.set("books_with_quantities", booksNode);
-
-        out.write(restockRequest + "\n");
-        out.flush();
-
+        getBooksWithQuantitiesAndRequest(booksWithAddedQuantities, restockRequest);
+        
         JsonNode response = objectMapper.readTree(in.readLine());
         String status = response.get("status").asText();
 
@@ -145,7 +128,8 @@ public class EmployeeController extends UserController {
         } catch (NoBooksException e) {
             view.displayError(e.getMessage());
         } catch (IOException e) {
-            view.displayError("Failed to communicate with the server.");
+            view.displayError("Failed to get all books from server. Please try again.");
+            log.error("Failed to get all books from the server: {}", e.getMessage());
         }
     }
 
@@ -167,7 +151,8 @@ public class EmployeeController extends UserController {
                 view.displayError(response.get("message").asText());
             }
         } catch (IOException e) {
-            view.displayError("Failed to communicate with the server.");
+            view.displayError("Failed to send approval of order to server. Please try again.");
+            log.error("Failed to send approval of order to server: {}" ,e.getMessage());
         }
     }
 
@@ -189,7 +174,8 @@ public class EmployeeController extends UserController {
                 view.displayError(response.get("message").asText());
             }
         } catch (IOException e) {
-            view.displayError("Failed to communicate with the server.");
+            view.displayError("Failed to send discarding of order to server. Please try again.");
+            log.error("Failed to send discarding to server: {}", e.getMessage());
         }
     }
 
@@ -236,5 +222,27 @@ public class EmployeeController extends UserController {
             }
         }
         return booksWithAddedQuantities;
+    }
+
+    private void fetchOrdersAndCheck(JsonNode response) throws IOException {
+        String ordersJson = response.get("orders").asText();
+        List<Order> orders = objectMapper.readValue(ordersJson, objectMapper.getTypeFactory().constructCollectionType(List.class, Order.class));
+
+        if (orders.isEmpty()) {
+            view.noOrdersFound();
+            return;
+        }
+
+        for (Order order : orders) {
+            String orderItemsJson = response.get("order_items_" + order.getId()).asText();
+            List<OrderItem> orderItems = objectMapper.readValue(orderItemsJson, objectMapper.getTypeFactory().constructCollectionType(List.class, OrderItem.class));
+
+            String answer = view.askForApprovalOfOrder(order, orderItems);
+            if ("y".equalsIgnoreCase(answer)) {
+                approveOrder(order);
+            } else {
+                discardOrder(order);
+            }
+        }
     }
 }

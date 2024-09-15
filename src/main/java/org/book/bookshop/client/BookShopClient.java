@@ -2,18 +2,23 @@ package org.book.bookshop.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.book.bookshop.controller.user.AdminController;
-import org.book.bookshop.controller.user.ClientController;
-import org.book.bookshop.controller.user.EmployeeController;
+import org.book.bookshop.client.user.AdminController;
+import org.book.bookshop.client.user.ClientController;
+import org.book.bookshop.client.user.EmployeeController;
+import org.book.bookshop.helpers.IPGetter;
 import org.book.bookshop.model.Role;
 import org.book.bookshop.model.User;
 import org.book.bookshop.view.user.LoginView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.UUID;
 
 public class BookShopClient {
+    private static final Logger log = LoggerFactory.getLogger(BookShopClient.class);
+
     private final Socket socket;
     private final BufferedWriter out;
     private final BufferedReader in;
@@ -40,12 +45,12 @@ public class BookShopClient {
             System.out.println("Connected to the server.");
             runMainFlow();
         } catch (IOException e) {
-            e.printStackTrace(); // will delete
+            log.error(String.format("Can't start client. %s", e.getMessage()));
         } finally {
             try {
                 socket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error(String.format("Can't close client. %s", e.getMessage()));
             }
         }
     }
@@ -85,15 +90,7 @@ public class BookShopClient {
         if (response.get("status").asText().equals("success")) {
             System.out.println("Login successful!");
 
-            UUID id = UUID.fromString(response.get("id").asText());
-            String username = response.get("username").asText();
-            String email = response.get("email").asText();
-            String password = response.get("password").asText();
-            Role role = Role.valueOf(response.get("role").asText());
-
-            user = new User(username, email, password);
-            user.setId(id);
-            user.setRole(role);
+            getUserDetails(response);
 
         } else {
             System.out.println("Login failed: " + response.get("message").asText());
@@ -110,21 +107,26 @@ public class BookShopClient {
         JsonNode response = objectMapper.readTree(responseLine);
 
         if (response.get("status").asText().equals("success")) {
-            UUID id = UUID.fromString(response.get("id").asText());
-            String username = response.get("username").asText();
-            String email = response.get("email").asText();
-            String password = response.get("password").asText();
-            Role role = Role.valueOf(response.get("role").asText());
-
-            user = new User(username, email, password);
-            user.setId(id);
-            user.setRole(role);
+            getUserDetails(response);
 
             System.out.println("Registration successful!");
         } else {
             System.out.println("Registration failed: " + response.get("message").asText());
         }
     }
+
+    private void getUserDetails(JsonNode response) {
+        UUID id = UUID.fromString(response.get("id").asText());
+        String username = response.get("username").asText();
+        String email = response.get("email").asText();
+        String password = response.get("password").asText();
+        Role role = Role.valueOf(response.get("role").asText());
+
+        user = new User(username, email, password);
+        user.setId(id);
+        user.setRole(role);
+    }
+
 
     private int handleRoleSpecificOptions() {
         return switch (user.getRole()) {
@@ -149,10 +151,18 @@ public class BookShopClient {
 
     public static void main(String[] args) {
         try {
-            BookShopClient client = new BookShopClient("127.0.0.1", 3333);
-            client.start();
+            String publicIP = IPGetter.getIp();
+            int port = 3333;
+
+            if(!publicIP.isEmpty()) {
+                log.info("Client is going to start with IP {} and port {}.", publicIP, port);
+
+                BookShopClient client = new BookShopClient(publicIP, port);
+                client.start();
+            }
+
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Can't start client! {}!", e.getMessage());
         }
     }
 }

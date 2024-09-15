@@ -28,10 +28,11 @@ public class DatabaseCreator {
 
                 statement.execute(sql.toString());
                 log.info("Database is created and it's functional.");
+
                 return true;
             }
         } catch (Exception e) {
-            log.error(String.format("Error in creating database! %s Terminating app!", e.getMessage()));
+            log.error(String.format("Error in creating database! %s! Terminating app!", e.getMessage()));
             return false;
         }
     }
