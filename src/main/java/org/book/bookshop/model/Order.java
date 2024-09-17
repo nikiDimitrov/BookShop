@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.book.bookshop.helpers.StatusHelper;
 
+import java.sql.SQLException;
 import java.util.UUID;
 
 @Getter
@@ -20,7 +21,13 @@ public class Order {
 
     public Order(User user) {
         this.user = user;
-        status = StatusHelper.getStatusByName("active");
+        try {
+            status = StatusHelper.getStatusByName("active");
+        }
+        catch (SQLException e) {
+            status = null;
+        }
+
     }
 
     public Order() {

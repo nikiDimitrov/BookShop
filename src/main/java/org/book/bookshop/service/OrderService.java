@@ -73,6 +73,10 @@ public class OrderService {
     }
 
     public void changeOrderStatus(Order order, Status newStatus) throws SQLException {
+        if(!order.getStatus().getName().equals("active")){
+            throw new IllegalStateException("Order has already been reviewed by another employee!");
+        }
+
         order.setStatus(newStatus);
 
         orderRepository.updateStatus(order, newStatus);

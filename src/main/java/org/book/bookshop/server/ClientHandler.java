@@ -28,6 +28,7 @@ public class ClientHandler extends Thread {
     private final CategoryService categoryService = new CategoryService();
     private final OrderService orderService = new OrderService();
     private final OrderItemService orderItemService = new OrderItemService();
+    private User user;
 
     public ClientHandler(Socket clientSocket, List<ClientHandler> connectedClients) {
         this.clientSocket = clientSocket;
@@ -150,6 +151,8 @@ public class ClientHandler extends Thread {
             out.write(response.toString() + "\n");
 
             System.out.printf("A new user has registered! Welcome %s %s!\n", user.getRole(), user.getUsername());
+
+            this.user = user;
         }
         catch(IllegalArgumentException e) {
             sendFailureResponse(e.getMessage());
@@ -166,6 +169,15 @@ public class ClientHandler extends Thread {
         try {
             User user = userService.loginUser(username, password);
 
+            synchronized (connectedClients) {
+                for(ClientHandler client : connectedClients) {
+                    if(client.user != null &&
+                            client.user.getUsername().equals(user.getUsername())) {
+                        throw new IllegalStateException("User is already logged in!");
+                    }
+                }
+            }
+
             JsonNode response = objectMapper.createObjectNode()
                     .put("status", "success")
                     .put("id", String.valueOf(user.getId()))
@@ -178,7 +190,9 @@ public class ClientHandler extends Thread {
 
             System.out.printf("User %s %s has logged in!\n", user.getRole(), user.getUsername());
 
-        } catch(NoSuchElementException e) {
+            this.user = user;
+
+        } catch(NoSuchElementException | IllegalArgumentException | IllegalStateException e) {
             sendFailureResponse(e.getMessage());
         } catch(SQLException e) {
             checkIfConnectionErrorAndLog(e);
@@ -334,10 +348,10 @@ public class ClientHandler extends Thread {
 
     private void fetchOrders(JsonNode request) throws IOException {
         String statusName = request.get("status").asText();
-        Status status = StatusHelper.getStatusByName(statusName);
         String username = request.get("user").asText();
 
         try {
+            Status status = StatusHelper.getStatusByName(statusName);
             List<Order> orders = orderService.findOrdersByStatus(status);
             if (orders.isEmpty()) {
                 sendFailureResponse("No orders found for the status: " + statusName);
@@ -384,7 +398,7 @@ public class ClientHandler extends Thread {
             changeOrderStatus(orderId, "approved");
             sendSuccessResponse("Order approved successfully.");
             System.out.printf("Order %s has been approved by employee %s.\n", orderId, username);
-        } catch (IOException e) {
+        } catch (IOException | IllegalStateException e) {
             sendFailureResponse("Failed to approve order: " + e.getMessage());
         }
     }
@@ -398,7 +412,7 @@ public class ClientHandler extends Thread {
             sendSuccessResponse("Order discarded successfully.");
             System.out.printf("Order %s has been discarded by employee %s.\n", orderId, username);
 
-        } catch (IOException e) {
+        } catch (IOException | IllegalStateException e) {
             sendFailureResponse("Failed to discard order: " + e.getMessage());
         }
     }
@@ -497,7 +511,7 @@ public class ClientHandler extends Thread {
 
     }
 
-    private void changeOrderStatus(UUID orderId, String statusName) throws IOException {
+    private void changeOrderStatus(UUID orderId, String statusName) throws IOException, IllegalStateException {
         try {
             Order order = orderService.findById(orderId);
             if (order == null) {
