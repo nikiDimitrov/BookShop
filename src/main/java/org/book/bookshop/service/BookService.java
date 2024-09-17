@@ -1,6 +1,5 @@
 package org.book.bookshop.service;
 
-import org.book.bookshop.exceptions.NoBooksException;
 import org.book.bookshop.helpers.BookShopValidator;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
@@ -8,9 +7,10 @@ import org.book.bookshop.model.Order;
 import org.book.bookshop.model.OrderItem;
 import org.book.bookshop.repository.*;
 
+import java.sql.SQLException;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 
 public class BookService {
@@ -29,21 +29,21 @@ public class BookService {
         this.orderItemRepository = new OrderItemRepository();
     }
 
-    public List<Book> findAllBooks() throws NoBooksException {
+    public List<Book> findAllBooks() throws SQLException {
         List<Book> books = bookRepository.findAll();
 
         if(books.isEmpty()) {
-            throw new NoBooksException("No books found!");
+            throw new NoSuchElementException("No books found!");
         }
 
         return books;
     }
 
-    public Book findById(UUID id) {
+    public Book findById(UUID id) throws SQLException {
         return bookRepository.findById(id).stream().findFirst().orElse(null);
     }
 
-    public Book saveBook(String name, String author, double price, List<Category> categories, int year, int quantity) throws IllegalArgumentException {
+    public Book saveBook(String name, String author, double price, List<Category> categories, int year, int quantity) throws IllegalArgumentException, SQLException {
         Book book = BookShopValidator.isBookValid(name, author, price, categories, year, quantity);
 
         if(book == null) {
@@ -55,26 +55,26 @@ public class BookService {
         if(savedBook != null) {
             savedBook.setCategories(categories);
 
-            CompletableFuture.runAsync(() -> booksCategoriesRepository.joinBookAndCategories(savedBook));
+            booksCategoriesRepository.joinBookAndCategories(savedBook);
         }
 
         return savedBook;
     }
 
-    public synchronized void updateBookQuantity(OrderItem orderItem) {
+    public synchronized void updateBookQuantity(OrderItem orderItem) throws SQLException {
         Book book = orderItem.getBook();
         int newQuantity = book.getQuantity() - orderItem.getQuantity();
         book.setQuantity(newQuantity);
         bookRepository.updateQuantity(book, newQuantity);
     }
 
-    public void restockBook(Book book, int quantityToAdd) {
+    public void restockBook(Book book, int quantityToAdd) throws SQLException {
         int newQuantity = book.getQuantity() + quantityToAdd;
 
         bookRepository.updateQuantity(book, newQuantity);
     }
 
-    public synchronized void deleteBook(Book book) {
+    public synchronized void deleteBook(Book book) throws SQLException {
         List<Order> ordersOfBook = orderRepository.findByBookId(book.getId());
 
         for (Order order : ordersOfBook) {
@@ -86,20 +86,9 @@ public class BookService {
 
         booksCategoriesRepository.deleteBookAndCategories(book);
 
-        CompletableFuture<Void> deleteCategories = CompletableFuture.runAsync(
-                () -> categoryRepository.deleteBatch(book.getCategories())
-        );
+        categoryRepository.deleteBatch(book.getCategories());
 
-        CompletableFuture<Void> deleteBook = CompletableFuture.runAsync(
-                () -> bookRepository.delete(book)
-        );
-
-        CompletableFuture<Void> allDeletes = CompletableFuture.allOf(deleteCategories, deleteBook);
-
-        allDeletes.exceptionally(ex -> {
-            System.err.println("An error occurred during deletion: " + ex.getMessage());
-            return null;
-        });
+        bookRepository.delete(book);
     }
 
 

@@ -2,7 +2,6 @@ package org.book.bookshop.client.user;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.book.bookshop.exceptions.NoBooksException;
 import org.book.bookshop.model.*;
 import org.book.bookshop.view.user.EmployeeView;
 import org.slf4j.Logger;
@@ -91,13 +90,11 @@ public class EmployeeController extends UserController {
 
                 view.finishRestocking();
             }
-        } catch (NoBooksException e) {
-            view.displayError("No books to restock!");
+        } catch (RuntimeException e) {
+            view.displayError(e.getMessage());
         } catch (IOException e) {
             view.displayError("Failed to send restocking of books to server. Please try again.");
             log.error("Failed to send restocking of books to server: {}", e.getMessage());
-        } catch (IllegalArgumentException e) {
-            view.displayError("Incorrect arguments!");
         }
     }
 
@@ -125,7 +122,7 @@ public class EmployeeController extends UserController {
             if (books != null) {
                 view.showAllBooks(books, showCategories);
             }
-        } catch (NoBooksException e) {
+        } catch (RuntimeException e) {
             view.displayError(e.getMessage());
         } catch (IOException e) {
             view.displayError("Failed to get all books from server. Please try again.");

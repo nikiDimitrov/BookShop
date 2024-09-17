@@ -154,7 +154,7 @@ public class BookShopClient {
             String publicIP = IPGetter.getIp();
             int port = 3333;
 
-            if(!publicIP.isEmpty()) {
+            if(publicIP != null && !publicIP.isEmpty()) {
                 log.info("Client is going to start with IP {} and port {}.", publicIP, port);
 
                 BookShopClient client = new BookShopClient(publicIP, port);

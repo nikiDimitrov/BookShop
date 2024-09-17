@@ -1,4 +1,5 @@
 package org.book.bookshop.repository;
+
 import org.book.bookshop.helpers.DatabaseConnection;
 import org.book.bookshop.model.*;
 
@@ -9,12 +10,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class OrderItemRepository {
-    
+
     private final String SQLSELECT = "SELECT oi.id AS order_item_id, oi.quantity AS order_item_quantity, " +
             "o.id AS order_id, o.total_price AS order_total_price, " +
             "s.id AS status_id, s.name AS status_name," +
             "b.id AS book_id, b.name AS book_name, b.author AS book_author, b.price AS book_price, b.year AS book_year, b.quantity as book_quantity, " +
-            " u.id AS user_id, u.username AS user_username, u.email AS user_email, u.password AS user_password, u.role AS user_role, " +
+            "u.id AS user_id, u.username AS user_username, u.email AS user_email, u.password AS user_password, u.role AS user_role, " +
             "c.id AS category_id, c.name AS category_name FROM order_items as oi " +
             "JOIN orders as o on oi.order_id = o.id " +
             "JOIN books as b on oi.book_id = b.id " +
@@ -23,39 +24,32 @@ public class OrderItemRepository {
             "JOIN categories as c on c.id = bc.categories_id " +
             "JOIN statuses as s on o.status_id = s.id";
 
-    public Optional<OrderItem> findById(UUID id) {
-        String sql = SQLSELECT +
-                " WHERE oi.id = ?";
+    public Optional<OrderItem> findById(UUID id) throws SQLException {
+        String sql = SQLSELECT + " WHERE oi.id = ?";
 
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, id);
-
             ResultSet resultSet = statement.executeQuery();
 
-            if(resultSet.next()) {
+            if (resultSet.next()) {
                 OrderItem orderItem = mapResultSetToOrderItem(resultSet);
                 return Optional.of(orderItem);
             }
-        }
-        catch(SQLException e) {
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return Optional.empty();
     }
 
-    public List<OrderItem> findByOrderId(UUID orderId) {
+    public List<OrderItem> findByOrderId(UUID orderId) throws SQLException {
         List<OrderItem> orderItems = new ArrayList<>();
-
         String sql = SQLSELECT + " WHERE order_id = ?";
 
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, orderId);
-
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
@@ -63,18 +57,15 @@ public class OrderItemRepository {
                 orderItems.add(orderItem);
             }
         }
-        catch(SQLException e) {
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
-        }
 
         return orderItems;
     }
 
-    public OrderItem save(OrderItem orderItem) {
-        String sql = "INSERT INTO order_items (id, quantity, book_id, order_id) VALUES (?, ?, ? ,?)";
+    public OrderItem save(OrderItem orderItem) throws SQLException {
+        String sql = "INSERT INTO order_items (id, quantity, book_id, order_id) VALUES (?, ?, ?, ?)";
 
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             UUID id = UUID.randomUUID();
             statement.setObject(1, id);
@@ -86,30 +77,21 @@ public class OrderItemRepository {
 
             return findById(id).stream().findFirst().orElse(null);
         }
-        catch (SQLException e) {
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
-        }
-
-        return null;
     }
 
-    public void delete(OrderItem orderItem) {
+    public void delete(OrderItem orderItem) throws SQLException {
         String sql = "DELETE FROM order_items WHERE id = ?";
 
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, orderItem.getId());
-
             statement.executeUpdate();
-        }
-        catch(SQLException e) {
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
     }
 
-    public void deleteInBatch(List<OrderItem> orderItems) {
-        for(OrderItem orderItem : orderItems) {
+    public void deleteInBatch(List<OrderItem> orderItems) throws SQLException {
+        for (OrderItem orderItem : orderItems) {
             delete(orderItem);
         }
     }
@@ -169,5 +151,4 @@ public class OrderItemRepository {
 
         return orderItem;
     }
-
 }

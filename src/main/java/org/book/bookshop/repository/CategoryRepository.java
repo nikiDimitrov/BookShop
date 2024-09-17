@@ -10,54 +10,47 @@ import java.util.UUID;
 
 public class CategoryRepository {
 
-    public Optional<Category> findCategoryByName(String name) {
+    public Optional<Category> findCategoryByName(String name) throws SQLException {
         String sql = "SELECT * FROM categories WHERE name = ?";
 
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, name);
             ResultSet resultSet = statement.executeQuery();
 
-            if(resultSet.next()) {
+            if (resultSet.next()) {
                 Category category = mapResultSetToCategory(resultSet);
                 return Optional.of(category);
             }
-        }
-        catch(SQLException e) {
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return Optional.empty();
     }
 
-    public Optional<Category> findById(UUID id) {
+    public Optional<Category> findById(UUID id) throws SQLException {
         String sql = "SELECT * FROM categories WHERE id = ?";
 
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, id);
-
             ResultSet resultSet = statement.executeQuery();
 
-            if(resultSet.next()) {
+            if (resultSet.next()) {
                 Category category = mapResultSetToCategory(resultSet);
-
                 return Optional.of(category);
             }
-        }
-        catch(SQLException e) {
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return Optional.empty();
     }
-    public Category save(Category category) {
+
+    public Category save(Category category) throws SQLException {
         String sql = "INSERT INTO categories (id, name) VALUES (?, ?)";
 
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             UUID id = UUID.randomUUID();
             statement.setObject(1, id);
@@ -67,35 +60,26 @@ public class CategoryRepository {
 
             return findById(id).stream().findFirst().orElse(null);
         }
-        catch (SQLException e) {
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
-        }
-
-        return null;
     }
 
-    public void delete(Category category) {
+    public void delete(Category category) throws SQLException {
         String sql = "DELETE FROM categories WHERE id = ?";
 
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, category.getId());
-
             statement.executeUpdate();
-        }
-        catch (SQLException e) {
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
     }
 
-    public void deleteBatch(List<Category> categories) {
-        for(Category category : categories) {
+    public void deleteBatch(List<Category> categories) throws SQLException {
+        for (Category category : categories) {
             delete(category);
         }
     }
 
-    private Category mapResultSetToCategory(ResultSet resultSet) throws SQLException{
+    private Category mapResultSetToCategory(ResultSet resultSet) throws SQLException {
         UUID id = (UUID) resultSet.getObject("id");
         String name = resultSet.getString("name");
 

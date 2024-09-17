@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 public class IPGetter {
@@ -20,29 +19,26 @@ public class IPGetter {
             "https://ipecho.net/plain"
     };
 
-    public static String getIp() throws MalformedURLException {
-        URL whatIsMyIP = new URL(services[0]);
+    public static String getIp() throws IOException {
         String ip = "";
         boolean success = false;
 
-        for(int i = 1; i < services.length; i++) {
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(
-                    whatIsMyIP.openStream()))){
+        for (String service : services) {
+            URL whatIsMyIP = new URL(service);
+
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(whatIsMyIP.openStream()))) {
                 ip = in.readLine();
                 success = true;
-            }
-            catch(IOException e) {
-                log.warn("Couldn't get public IP address with service {}. Trying with {}...", whatIsMyIP, services[i]);
-                whatIsMyIP = new URL(services[i]);
-            }
-
-            if(success) {
+                log.info("Successfully retrieved IP from {}", service);
                 break;
+            } catch (IOException e) {
+                log.warn("Couldn't get public IP address with service {}. Trying with next service...", service);
             }
         }
 
-        if(ip.isEmpty()){
-            log.error("Couldn't get public IP address with neither services...");
+        if (!success) {
+            log.error("Couldn't get public IP address with any of the services...");
+            return null;
         }
 
         return ip;

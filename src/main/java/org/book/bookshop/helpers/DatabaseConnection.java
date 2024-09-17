@@ -1,6 +1,5 @@
 package org.book.bookshop.helpers;
 
-import org.postgresql.util.PSQLState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,14 +44,4 @@ public class DatabaseConnection {
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
-
-    public static void checkIfConnectionErrorAndTerminateOrLog(SQLException e) {
-        if(PSQLState.isConnectionError(e.getSQLState())) {
-            log.error(String.format("There is an error in the database connection. %s Terminating app...", e.getMessage()));
-            System.exit(-1);
-        } else {
-            log.error("SQL Error occurred: {}", e.getMessage());
-        }
-    }
-
 }

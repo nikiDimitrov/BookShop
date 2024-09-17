@@ -13,17 +13,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class OrderRepository {
-    private final String SQLSELECT ="SELECT o.id AS order_id, o.user_id AS order_user_id, o.total_price AS order_total_price, " +
+    private final String SQLSELECT = "SELECT o.id AS order_id, o.user_id AS order_user_id, o.total_price AS order_total_price, " +
             "s.id AS status_id, s.name AS status_name, " +
-            "u.id AS user_id, u.username AS user_username, u.email AS user_email, u.password AS user_password, u.role AS user_role FROM orders AS o" +
-            " JOIN users AS u ON o.user_id = u.id" +
-            " JOIN statuses as s ON o.status_id = s.id ";
+            "u.id AS user_id, u.username AS user_username, u.email AS user_email, u.password AS user_password, u.role AS user_role FROM orders AS o " +
+            "JOIN users AS u ON o.user_id = u.id " +
+            "JOIN statuses as s ON o.status_id = s.id ";
 
-    public List<Order> findByUserAndStatus(User user, Status status) {
+    public List<Order> findByUserAndStatus(User user, Status status) throws SQLException {
         List<Order> orders = new ArrayList<>();
-
-        String sql = SQLSELECT +
-                "WHERE o.user_id = ? AND o.status_id = ?";
+        String sql = SQLSELECT + "WHERE o.user_id = ? AND o.status_id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -32,44 +30,34 @@ public class OrderRepository {
             statement.setObject(2, status.getId());
 
             ResultSet resultSet = statement.executeQuery();
-
-            while(resultSet.next()) {
+            while (resultSet.next()) {
                 Order order = mapResultSetToOrder(resultSet);
                 orders.add(order);
             }
-        }
-        catch(SQLException e) {
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return orders;
     }
 
-    public Optional<Order> findById(UUID id) {
-        String sql = SQLSELECT +
-                "WHERE o.id = ?";
+    public Optional<Order> findById(UUID id) throws SQLException {
+        String sql = SQLSELECT + "WHERE o.id = ?";
 
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, id);
 
             ResultSet resultSet = statement.executeQuery();
-
-            if(resultSet.next()) {
+            if (resultSet.next()) {
                 Order order = mapResultSetToOrder(resultSet);
-
                 return Optional.of(order);
             }
-        }
-        catch(SQLException e) {
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return Optional.empty();
     }
 
-    public List<Order> findByBookId(UUID bookId) {
+    public List<Order> findByBookId(UUID bookId) throws SQLException {
         List<Order> orders = new ArrayList<>();
         String sql = "SELECT o.id AS order_id, o.user_id AS order_user_id, o.total_price AS order_total_price, " +
                 "s.id AS status_id, s.name AS status_name, " +
@@ -86,24 +74,18 @@ public class OrderRepository {
 
             statement.setObject(1, bookId);
             ResultSet resultSet = statement.executeQuery();
-
             while (resultSet.next()) {
                 Order order = mapResultSetToOrder(resultSet);
                 orders.add(order);
             }
-        } catch (SQLException e) {
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return orders;
     }
 
-
-    public List<Order> findByStatus(Status status) {
+    public List<Order> findByStatus(Status status) throws SQLException {
         List<Order> orders = new ArrayList<>();
-
-        String sql = SQLSELECT +
-                "WHERE o.status_id = ?";
+        String sql = SQLSELECT + "WHERE o.status_id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -111,84 +93,63 @@ public class OrderRepository {
             statement.setObject(1, status.getId());
 
             ResultSet resultSet = statement.executeQuery();
-
-            while(resultSet.next()) {
+            while (resultSet.next()) {
                 Order order = mapResultSetToOrder(resultSet);
                 orders.add(order);
             }
-        }
-        catch(SQLException e) {
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return orders;
     }
 
-    public List<Order> findAll() {
+    public List<Order> findAll() throws SQLException {
         List<Order> orders = new ArrayList<>();
 
-
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement statement = connection.prepareStatement(SQLSELECT)) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SQLSELECT)) {
 
             ResultSet resultSet = statement.executeQuery();
-
-            while(resultSet.next()) {
+            while (resultSet.next()) {
                 Order order = mapResultSetToOrder(resultSet);
                 orders.add(order);
             }
-        }
-        catch(SQLException e) {
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
 
         return orders;
     }
 
-    public Order updateTotalPrice(Order order, double totalPrice) {
+    public Order updateTotalPrice(Order order, double totalPrice) throws SQLException {
         String sql = "UPDATE orders SET total_price = ? WHERE id = ?";
 
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setDouble(1, totalPrice);
             statement.setObject(2, order.getId());
 
             statement.executeUpdate();
-
-            return findById(order.getId()).stream().findFirst().orElse(null);
+            return findById(order.getId()).orElse(null);
         }
-        catch(SQLException e){
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
-        }
-
-        return null;
     }
 
-    public void updateStatus(Order order, Status status) {
+    public void updateStatus(Order order, Status status) throws SQLException {
         String sql = "UPDATE orders SET status_id = ? WHERE id = ?";
 
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, status.getId());
             statement.setObject(2, order.getId());
 
             statement.executeUpdate();
-
-            findById(order.getId()).stream().findFirst();
         }
-        catch(SQLException e){
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
-        }
-
     }
 
-    public Order save(Order order) {
+    public Order save(Order order) throws SQLException {
         String sql = "INSERT INTO orders (id, status_id, total_price, user_id) VALUES (?, ?, ?, ?)";
 
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             UUID id = UUID.randomUUID();
 
@@ -198,33 +159,23 @@ public class OrderRepository {
             statement.setObject(4, order.getUser().getId());
 
             statement.executeUpdate();
-
-            return findById(id).stream().findFirst().orElse(null);
+            return findById(id).orElse(null);
         }
-        catch (SQLException e) {
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
-        }
-
-        return null;
     }
 
-    public void delete(Order order) {
+    public void delete(Order order) throws SQLException {
         String sql = "DELETE FROM orders WHERE id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, order.getId());
-
             statement.executeUpdate();
-        }
-        catch(SQLException e) {
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
     }
 
-    public void deleteAllInBatch(List<Order> orders) {
-        for(Order order : orders) {
+    public void deleteAllInBatch(List<Order> orders) throws SQLException {
+        for (Order order : orders) {
             delete(order);
         }
     }
@@ -235,7 +186,7 @@ public class OrderRepository {
         double totalPrice = resultSet.getDouble("order_total_price");
 
         UUID statusId = (UUID) resultSet.getObject("status_id");
-        String status_name = resultSet.getString("status_name");
+        String statusName = resultSet.getString("status_name");
 
         String username = resultSet.getString("user_username");
         String email = resultSet.getString("user_email");
@@ -246,11 +197,10 @@ public class OrderRepository {
         user.setId(userId);
         user.setRole(role);
 
-        Status status = new Status(status_name);
+        Status status = new Status(statusName);
         status.setId(statusId);
 
         Order order = new Order(user);
-
         order.setId(orderId);
         order.setTotalPrice(totalPrice);
         order.setStatus(status);

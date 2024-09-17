@@ -9,8 +9,11 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BookShopServer {
+    private final List<ClientHandler> connectedClients = new ArrayList<>();
     private static final Logger log = LoggerFactory.getLogger(BookShopServer.class);
     private final ServerSocket serverSocket;
 
@@ -25,7 +28,10 @@ public class BookShopServer {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Client connected!");
 
-                new ClientHandler(clientSocket).start();
+                ClientHandler clientHandler = new ClientHandler(clientSocket, connectedClients);
+                connectedClients.add(clientHandler);
+                clientHandler.start();
+
             }
             catch (IOException e) {
                 log.error(e.getMessage());
@@ -37,7 +43,7 @@ public class BookShopServer {
         try {
             String publicIP = IPGetter.getIp();
 
-            if(publicIP.isEmpty()) {
+            if(publicIP != null && publicIP.isEmpty()) {
                 System.out.println("Can't get IP address... Exiting...");
             }
             else {

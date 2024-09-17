@@ -9,7 +9,7 @@ import java.util.*;
 
 public class BookRepository {
 
-    public List<Book> findAll() {
+    public List<Book> findAll() throws SQLException {
         List<Book> books = new ArrayList<>();
         Map<UUID, List<Category>> bookCategoriesMap = new HashMap<>();
 
@@ -17,11 +17,11 @@ public class BookRepository {
         String categorySql = "SELECT bc.book_id, c.* FROM books_categories AS bc " +
                 "JOIN categories as c ON bc.categories_id = c.id where bc.book_id IN (SELECT id FROM books)";
 
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement bookStatement = connection.prepareStatement(bookSql);
-            PreparedStatement categoryStatement = connection.prepareStatement(categorySql);
-            ResultSet bookResultSet = bookStatement.executeQuery();
-            ResultSet categoryResultSet = categoryStatement.executeQuery()){
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement bookStatement = connection.prepareStatement(bookSql);
+             PreparedStatement categoryStatement = connection.prepareStatement(categorySql);
+             ResultSet bookResultSet = bookStatement.executeQuery();
+             ResultSet categoryResultSet = categoryStatement.executeQuery()) {
 
             while (bookResultSet.next()) {
                 Book book = mapResultSetToBook(bookResultSet);
@@ -35,63 +35,54 @@ public class BookRepository {
                 Category category = new Category(categoryName);
                 category.setId(categoryId);
 
-                bookCategoriesMap.computeIfAbsent(bookId, k-> new ArrayList<>()).add(category);
+                bookCategoriesMap.computeIfAbsent(bookId, k -> new ArrayList<>()).add(category);
             }
 
             for (Book book : books) {
                 book.setCategories(bookCategoriesMap.getOrDefault(book.getId(), new ArrayList<>()));
             }
         }
-        catch (SQLException e) {
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
-        }
 
         return books;
     }
 
-    public Optional<Book> findById(UUID bookId) {
+    public Optional<Book> findById(UUID bookId) throws SQLException {
         String sql = "SELECT * FROM books WHERE id = ?";
 
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)){
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setObject(1, bookId);
 
             ResultSet resultSet = statement.executeQuery();
 
-            if(resultSet.next()){
+            if (resultSet.next()) {
                 Book book = mapResultSetToBook(resultSet);
                 getCategoriesForBook(book);
                 return Optional.of(book);
             }
         }
-        catch(SQLException e) {
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
-        }
 
         return Optional.empty();
     }
 
-    public void updateQuantity(Book book, int quantity) {
+    public void updateQuantity(Book book, int quantity) throws SQLException {
         String sql = "UPDATE books SET quantity = ? WHERE id = ?";
 
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setInt(1, quantity);
             statement.setObject(2, book.getId());
 
             statement.executeUpdate();
         }
-        catch(SQLException e){
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
-        }
     }
 
-    public Book save(Book book) {
+    public Book save(Book book) throws SQLException {
         String sql = "INSERT INTO books (id, name, author, price, year, quantity) VALUES (?, ?, ?, ?, ?, ?)";
 
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             UUID bookId = UUID.randomUUID();
             statement.setObject(1, bookId);
@@ -105,25 +96,17 @@ public class BookRepository {
 
             return findById(bookId).stream().findFirst().orElse(null);
         }
-        catch (SQLException e) {
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
-        }
-
-        return null;
     }
 
-    public void delete(Book book) {
+    public void delete(Book book) throws SQLException {
         String sql = "DELETE FROM books WHERE id = ?";
 
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, book.getId());
 
             statement.executeUpdate();
-        }
-        catch(SQLException e) {
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
         }
     }
 
@@ -141,14 +124,14 @@ public class BookRepository {
         return book;
     }
 
-    private void getCategoriesForBook(Book book) {
+    private void getCategoriesForBook(Book book) throws SQLException {
         List<Category> categories = new ArrayList<>();
 
         String sql = "SELECT bc.book_id, c.* FROM books_categories AS bc" +
                 " JOIN categories as c ON bc.categories_id = c.id WHERE bc.book_id = ?";
 
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, book.getId());
 
@@ -163,11 +146,7 @@ public class BookRepository {
                 categories.add(category);
             }
         }
-        catch (SQLException e){
-            DatabaseConnection.checkIfConnectionErrorAndTerminateOrLog(e);
-        }
 
         book.setCategories(categories);
     }
-
 }

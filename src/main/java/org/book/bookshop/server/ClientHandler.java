@@ -3,16 +3,16 @@ package org.book.bookshop.server;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.book.bookshop.exceptions.*;
 import org.book.bookshop.helpers.StatusHelper;
 import org.book.bookshop.model.*;
 import org.book.bookshop.service.*;
+import org.postgresql.util.PSQLState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.io.*;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.*;
 
 public class ClientHandler extends Thread {
@@ -22,15 +22,16 @@ public class ClientHandler extends Thread {
     private BufferedWriter out;
     private final Socket clientSocket;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
+    private final List<ClientHandler> connectedClients;
     private final UserService userService = new UserService();
     private final BookService bookService = new BookService();
     private final CategoryService categoryService = new CategoryService();
     private final OrderService orderService = new OrderService();
     private final OrderItemService orderItemService = new OrderItemService();
 
-    public ClientHandler(Socket clientSocket) {
+    public ClientHandler(Socket clientSocket, List<ClientHandler> connectedClients) {
         this.clientSocket = clientSocket;
+        this.connectedClients = connectedClients;
     }
 
     @Override
@@ -43,8 +44,15 @@ public class ClientHandler extends Thread {
 
         } catch (IOException e) {
             log.error("IO error: {}", e.getMessage(), e);
-        } catch (IllegalArgumentException e) {
+        } finally {
+            removeClient();
             log.info("A client has disconnected.");
+        }
+    }
+
+    private void removeClient() {
+        synchronized (connectedClients) {
+            connectedClients.remove(this);
         }
     }
 
@@ -146,6 +154,9 @@ public class ClientHandler extends Thread {
         catch(IllegalArgumentException e) {
             sendFailureResponse(e.getMessage());
         }
+        catch(SQLException e) {
+            checkIfConnectionErrorAndLog(e);
+        }
     }
 
     private void loginUser(JsonNode request) throws IOException {
@@ -167,14 +178,10 @@ public class ClientHandler extends Thread {
 
             System.out.printf("User %s %s has logged in!\n", user.getRole(), user.getUsername());
 
-        } catch(UsernameNotFoundException e) {
-            sendFailureResponse("User with this username not found!");
-        } catch (UserNotFoundException e) {
-            sendFailureResponse("User was not found!");
-        } catch(NoUsersException e) {
-            sendFailureResponse("No users to log into!");
-        } catch(IllegalArgumentException e) {
-            sendFailureResponse("Wrong password!");
+        } catch(NoSuchElementException e) {
+            sendFailureResponse(e.getMessage());
+        } catch(SQLException e) {
+            checkIfConnectionErrorAndLog(e);
         }
     }
 
@@ -200,6 +207,8 @@ public class ClientHandler extends Thread {
         }
         catch(IllegalArgumentException e) {
             sendFailureResponse(e.getMessage());
+        } catch(SQLException e) {
+            checkIfConnectionErrorAndLog(e);
         }
     }
 
@@ -228,9 +237,10 @@ public class ClientHandler extends Thread {
             out.write(response.toString() + "\n");
 
             System.out.printf("Admin %s has added book %s by %s.\n", adminUserName, book.getName(), book.getAuthor());
-        }
-        catch(IllegalArgumentException e) {
+        } catch(IllegalArgumentException e) {
             sendFailureResponse(e.getMessage());
+        } catch(SQLException e) {
+            checkIfConnectionErrorAndLog(e);
         }
     }
 
@@ -248,9 +258,10 @@ public class ClientHandler extends Thread {
             out.write(response.toString() + "\n");
 
             System.out.printf("User %s has deleted %s by %s.\n", adminUserName, book.getName(), book.getAuthor());
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             sendFailureResponse(e.getMessage());
+        } catch(SQLException e) {
+            checkIfConnectionErrorAndLog(e);
         }
     }
 
@@ -266,9 +277,10 @@ public class ClientHandler extends Thread {
 
             System.out.printf("User %s requested all books.\n", username);
             out.write(response.toString() + "\n");
-        }
-        catch (NoBooksException e) {
+        } catch (NoSuchElementException e) {
             sendFailureResponse(e.getMessage());
+        } catch(SQLException e) {
+            checkIfConnectionErrorAndLog(e);
         }
     }
 
@@ -284,8 +296,10 @@ public class ClientHandler extends Thread {
                     .put("users", usersJson);
 
             out.write(response.toString() + "\n");
-        } catch (UserNotFoundException e) {
+        } catch (NoSuchElementException e) {
             sendFailureResponse(e.getMessage());
+        } catch(SQLException e) {
+            checkIfConnectionErrorAndLog(e);
         }
     }
 
@@ -294,22 +308,28 @@ public class ClientHandler extends Thread {
             List<Order> orders = orderService.findAllOrders();
             sendResponseWithOrders(orders);
 
-        } catch (NoOrdersException e) {
+        } catch (RuntimeException e) {
             sendFailureResponse(e.getMessage());
+        } catch(SQLException e) {
+            checkIfConnectionErrorAndLog(e);
         }
     }
 
     private void processOrder(JsonNode request) throws IOException {
-        String username = request.get("user").asText();
-        User user = userService.loadUserByUsername(username);
+        try {
+            String username = request.get("user").asText();
+            User user = userService.loadUserByUsername(username);
 
-        Map<Book, Integer> booksWithQuantities = getBooksWithQuantities(request.get("books_with_quantities"));
+            Map<Book, Integer> booksWithQuantities = getBooksWithQuantities(request.get("books_with_quantities"));
 
-        Order order = createAndSaveOrder(user);
+            Order order = createAndSaveOrder(user);
 
-        List<OrderItem> orderItems = createOrderItems(order, booksWithQuantities);
+            List<OrderItem> orderItems = createOrderItems(order, booksWithQuantities);
 
-        processOrderAndRespond(order, orderItems, user);
+            processOrderAndRespond(order, orderItems, user);
+        } catch(SQLException e) {
+            checkIfConnectionErrorAndLog(e);
+        }
     }
 
     private void fetchOrders(JsonNode request) throws IOException {
@@ -328,23 +348,31 @@ public class ClientHandler extends Thread {
 
             System.out.printf("Employee %s started approving orders.\n", username);
 
-        } catch (NoOrdersException e) {
+        } catch (NoSuchElementException e) {
             sendFailureResponse("Error fetching orders: " + e.getMessage());
+        } catch(SQLException e) {
+            checkIfConnectionErrorAndLog(e);
         }
+
     }
 
     private void viewOrders(JsonNode request) throws IOException {
-        String username = request.get("user").asText();
-        User user = userService.loadUserByUsername(username);
+        try {
+            String username = request.get("user").asText();
+            User user = userService.loadUserByUsername(username);
 
-        ObjectNode response = objectMapper.createObjectNode();
-        response.put("status", "success");
+            ObjectNode response = objectMapper.createObjectNode();
+            response.put("status", "success");
 
-        putToResponseActiveAndDiscardedOrders(response, user);
+            putToResponseActiveAndDiscardedOrders(response, user);
 
-        out.write(response + "\n");
+            out.write(response + "\n");
 
-        System.out.printf("Client %s has viewed his approved and discarded orders.\n", user.getUsername());
+            System.out.printf("Client %s has viewed his approved and discarded orders.\n", user.getUsername());
+
+        } catch(SQLException e) {
+            checkIfConnectionErrorAndLog(e);
+        }
     }
 
 
@@ -356,7 +384,7 @@ public class ClientHandler extends Thread {
             changeOrderStatus(orderId, "approved");
             sendSuccessResponse("Order approved successfully.");
             System.out.printf("Order %s has been approved by employee %s.\n", orderId, username);
-        } catch (Exception e) {
+        } catch (IOException e) {
             sendFailureResponse("Failed to approve order: " + e.getMessage());
         }
     }
@@ -370,7 +398,7 @@ public class ClientHandler extends Thread {
             sendSuccessResponse("Order discarded successfully.");
             System.out.printf("Order %s has been discarded by employee %s.\n", orderId, username);
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             sendFailureResponse("Failed to discard order: " + e.getMessage());
         }
     }
@@ -403,83 +431,105 @@ public class ClientHandler extends Thread {
             sendSuccessResponse("Books restocked successfully.");
             System.out.printf("Employee %s restocked the inventory.\n", username);
 
-        } catch (NoBooksException e) {
-            sendFailureResponse("Failed to restock books: " + e.getMessage());
+        } catch (RuntimeException e) {
+            sendFailureResponse(e.getMessage());
         }
     }
 
-    private synchronized void restockEachBook(Map<Book, Integer> booksToRestock) {
-        for (Map.Entry<Book, Integer> entry : booksToRestock.entrySet()) {
-            bookService.restockBook(entry.getKey(), entry.getValue());
+    private synchronized void restockEachBook(Map<Book, Integer> booksToRestock) throws IOException {
+        try {
+            for (Map.Entry<Book, Integer> entry : booksToRestock.entrySet()) {
+                bookService.restockBook(entry.getKey(), entry.getValue());
+            }
+        } catch(SQLException e) {
+            checkIfConnectionErrorAndLog(e);
         }
     }
 
     private void sendResponseWithOrders(List<Order> orders) throws IOException {
-        ObjectNode response = objectMapper.createObjectNode().put("status", "success");
-        String ordersJson = objectMapper.writeValueAsString(orders);
-        response.put("orders", ordersJson);
+        try {
+            ObjectNode response = objectMapper.createObjectNode().put("status", "success");
+            String ordersJson = objectMapper.writeValueAsString(orders);
+            response.put("orders", ordersJson);
 
-        for (Order order : orders) {
-            List<OrderItem> orderItems = orderItemService.findByOrder(order);
-            String orderItemsJson = objectMapper.writeValueAsString(orderItems);
-            response.put("order_items_" + order.getId(), orderItemsJson);
+            for (Order order : orders) {
+                List<OrderItem> orderItems = orderItemService.findByOrder(order);
+                String orderItemsJson = objectMapper.writeValueAsString(orderItems);
+                response.put("order_items_" + order.getId(), orderItemsJson);
+            }
+
+            out.write(response + "\n");
+        } catch(SQLException e) {
+            checkIfConnectionErrorAndLog(e);
         }
-
-        out.write(response + "\n");
     }
 
     private void putToResponseOrdersByStatus(String statusName, String orderType, ObjectNode response, User user) throws IOException {
-        Status status = StatusHelper.getStatusByName(statusName);
-        List<Order> orders = orderService.findOrdersByUserAndStatus(user, status);
-        String activeOrdersJson = objectMapper.writeValueAsString(orders);
+        try {
+            Status status = StatusHelper.getStatusByName(statusName);
+            List<Order> orders = orderService.findOrdersByUserAndStatus(user, status);
+            String activeOrdersJson = objectMapper.writeValueAsString(orders);
 
-        response.put(orderType, activeOrdersJson);
+            response.put(orderType, activeOrdersJson);
 
-        for (Order order : orders) {
-            List<OrderItem> orderItems = orderItemService.findByOrder(order);
-            String orderItemsJson = objectMapper.writeValueAsString(orderItems);
-            response.put("order_items_" + order.getId(), orderItemsJson);
+            for (Order order : orders) {
+                List<OrderItem> orderItems = orderItemService.findByOrder(order);
+                String orderItemsJson = objectMapper.writeValueAsString(orderItems);
+                response.put("order_items_" + order.getId(), orderItemsJson);
+            }
+        } catch(SQLException e) {
+            checkIfConnectionErrorAndLog(e);
         }
     }
 
     private void putToResponseActiveAndDiscardedOrders(ObjectNode response, User user) throws IOException{
         try {
             putToResponseOrdersByStatus("active", "active_orders", response, user);
-        } catch (NoOrdersException e) {
+        } catch (RuntimeException e) {
             response.put("active_orders", "No active orders found!");
         }
 
         try {
             putToResponseOrdersByStatus("discarded", "discarded_orders", response, user);
-        } catch (NoOrdersException e) {
+        } catch (RuntimeException e) {
             response.put("discarded_orders", "No discarded orders found!");
         }
 
     }
 
-    private void changeOrderStatus(UUID orderId, String statusName) throws IOException{
-        Order order = orderService.findById(orderId);
-        if (order == null) {
-            sendFailureResponse("Order not found.");
-            return;
-        }
+    private void changeOrderStatus(UUID orderId, String statusName) throws IOException {
+        try {
+            Order order = orderService.findById(orderId);
+            if (order == null) {
+                sendFailureResponse("Order not found.");
+                return;
+            }
 
-        Status approvedStatus = StatusHelper.getStatusByName(statusName);
+            Status approvedStatus = StatusHelper.getStatusByName(statusName);
 
-        orderService.changeOrderStatus(order, approvedStatus);
+            orderService.changeOrderStatus(order, approvedStatus);
 
-        for (OrderItem orderItem : orderItemService.findByOrder(order)) {
-            bookService.updateBookQuantity(orderItem);
+            for (OrderItem orderItem : orderItemService.findByOrder(order)) {
+                bookService.updateBookQuantity(orderItem);
+            }
+        } catch(SQLException e) {
+            checkIfConnectionErrorAndLog(e);
         }
     }
 
     private Map<Book, Integer> getBooksWithQuantities(JsonNode booksWithQuantitiesNode) {
         Map<Book, Integer> booksWithQuantities = new HashMap<>();
         booksWithQuantitiesNode.fields().forEachRemaining(entry -> {
-            Book book = bookService.findById(UUID.fromString(entry.getKey()));
+            Book book;
+            try {
+                book = bookService.findById(UUID.fromString(entry.getKey()));
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
             int quantity = entry.getValue().asInt();
             booksWithQuantities.put(book, quantity);
         });
+
         return booksWithQuantities;
     }
 
@@ -493,14 +543,18 @@ public class ClientHandler extends Thread {
     }
 
     private void processOrderAndRespond(Order order, List<OrderItem> orderItems, User user) throws IOException {
-        Order processedOrder = orderService.makeOrder(order, orderItems);
+       try {
+           Order processedOrder = orderService.makeOrder(order, orderItems);
 
-        if (processedOrder != null) {
-            sendSuccessResponse("Order was made!");
-            System.out.printf("User %s made an order.\n", user.getUsername());
-        } else {
-            sendFailureResponse("Couldn't make order!");
-        }
+           if (processedOrder != null) {
+               sendSuccessResponse("Order was made!");
+               System.out.printf("User %s made an order.\n", user.getUsername());
+           } else {
+               sendFailureResponse("Couldn't make order!");
+           }
+       } catch(SQLException e) {
+           checkIfConnectionErrorAndLog(e);
+       }
     }
 
     private void sendSuccessResponse(String message) throws IOException {
@@ -519,24 +573,62 @@ public class ClientHandler extends Thread {
         out.write(response.toString() + "\n");
     }
 
-    private List<Category> getCategoriesByNames(String categoriesString) {
+    private List<Category> getCategoriesByNames(String categoriesString) throws IOException {
         List<Category> categories = new ArrayList<>();
 
-        String[] categoriesNames = categoriesString.split(SEPARATOR);
+        try {
+            String[] categoriesNames = categoriesString.split(SEPARATOR);
 
-        for(String categoryName : categoriesNames) {
-            Category category = categoryService.getCategoryByName(categoryName.toLowerCase());
+            for (String categoryName : categoriesNames) {
+                Category category = categoryService.getCategoryByName(categoryName.toLowerCase());
 
-            if(category == null){
-                category = categoryService.saveCategory(categoryName.toLowerCase());
+                if (category == null) {
+                    category = categoryService.saveCategory(categoryName.toLowerCase());
+                }
+                categories.add(category);
             }
-            categories.add(category);
+        } catch(SQLException e) {
+            checkIfConnectionErrorAndLog(e);
         }
 
         return categories;
     }
 
-    private Order createAndSaveOrder(User user) {
-        return orderService.save(user);
+    private Order createAndSaveOrder(User user) throws IOException {
+        try {
+            return orderService.save(user);
+        } catch (SQLException e){
+            checkIfConnectionErrorAndLog(e);
+        }
+        return null;
+    }
+
+    public void sendErrorMessageToClient(String message) throws IOException {
+        sendFailureResponse(message);
+    }
+
+    public  void checkIfConnectionErrorAndLog(SQLException e) throws IOException {
+        if (PSQLState.isConnectionError(e.getSQLState())) {
+            handleDatabaseError(e);
+            log.error("There is an error in the database connection: {}! Informing users...", e.getMessage());
+        } else {
+            log.error("An error occurred: {}", e.getMessage());
+            sendFailureResponse(e.getMessage());
+        }
+    }
+
+    public static void notifyAllClientsOfError(List<ClientHandler> connectedClients, String errorMessage) {
+        for (ClientHandler client : connectedClients) {
+            try {
+                client.sendErrorMessageToClient(errorMessage);
+            } catch (IOException e) {
+                log.error("Failed to send error message to client: {}", e.getMessage());
+            }
+        }
+    }
+
+    private void handleDatabaseError(SQLException e) {
+        log.error("Database error occurred: {}", e.getMessage());
+        notifyAllClientsOfError(connectedClients, "A database error occurred. Please try again later.");
     }
 }

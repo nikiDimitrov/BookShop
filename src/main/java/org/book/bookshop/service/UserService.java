@@ -1,14 +1,14 @@
 package org.book.bookshop.service;
 
-import org.book.bookshop.exceptions.NoUsersException;
-import org.book.bookshop.exceptions.UserNotFoundException;
 import org.book.bookshop.helpers.BookShopValidator;
 import org.book.bookshop.model.Role;
 import org.book.bookshop.model.User;
 import org.book.bookshop.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.sql.SQLException;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 public class UserService {
@@ -21,7 +21,7 @@ public class UserService {
         this.encoder = new BCryptPasswordEncoder(16);
     }
 
-    public User registerUser(String username, String email, String password, Role role) {
+    public User registerUser(String username, String email, String password, Role role) throws SQLException {
         if(userRepository.findByUsername(username).isPresent()
                 || userRepository.findByEmail(email).isPresent()) {
             throw new IllegalArgumentException("User with that username or email already exists!");
@@ -48,14 +48,14 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User loginUser(String username, String password) {
+    public User loginUser(String username, String password) throws SQLException {
         if(userRepository.findAll().isEmpty()) {
-            throw new NoUsersException("No users found! Can't log in!");
+            throw new NoSuchElementException("No users found! Can't log in!");
         }
         User user = loadUserByUsername(username);
 
         if(user == null) {
-            throw new UserNotFoundException(String.format("User with username %s not found!", username));
+            throw new NoSuchElementException(String.format("User with username %s not found!", username));
         }
 
         if(!encoder.matches(password, user.getPassword())){
@@ -65,11 +65,17 @@ public class UserService {
         return user;
     }
 
-    public List<User> findAllUsers() {
-        return userRepository.findAll();
+    public List<User> findAllUsers() throws SQLException {
+        List<User> users = userRepository.findAll();
+
+        if(users.isEmpty()) {
+            throw new NoSuchElementException("No users found in database!");
+        }
+
+        return users;
     }
 
-    public User loadUserByUsername(String username) {
+    public User loadUserByUsername(String username) throws SQLException {
         Optional<User> optionalUser = userRepository.findByUsername(username);
 
         return optionalUser.stream().findFirst().orElse(null);

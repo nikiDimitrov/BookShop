@@ -2,7 +2,6 @@ package org.book.bookshop.client.user;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.book.bookshop.exceptions.NoBooksException;
 import org.book.bookshop.model.*;
 import org.book.bookshop.view.user.ClientView;
 import org.slf4j.Logger;
@@ -63,14 +62,11 @@ public class ClientController extends UserController {
             if (!booksWithQuantities.isEmpty() && confirmOrder(booksWithQuantities)) {
                 processOrder(booksWithQuantities);
             }
-
-        } catch (NoBooksException e) {
+        } catch (RuntimeException e) {
             view.displayError(e.getMessage());
         } catch (IOException e) {
             view.displayError("Can't order books from server. Please try again.");
             log.error("Can't order books from server: {}", e.getMessage());
-        } catch (RuntimeException e) {
-            view.displayError("Incorrect argument!");
         }
     }
 
