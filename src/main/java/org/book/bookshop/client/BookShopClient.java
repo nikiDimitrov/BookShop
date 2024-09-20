@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.book.bookshop.client.user.AdminController;
 import org.book.bookshop.client.user.ClientController;
 import org.book.bookshop.client.user.EmployeeController;
-import org.book.bookshop.helpers.IPGetter;
 import org.book.bookshop.model.Role;
 import org.book.bookshop.model.User;
 import org.book.bookshop.view.user.LoginView;
@@ -151,15 +150,12 @@ public class BookShopClient {
 
     public static void main(String[] args) {
         try {
-            String publicIP = IPGetter.getIp();
+            String serverIP = "87.119.114.56";
             int port = 3333;
+            log.info("Client is going to connect to server with IP {} and port {}.", serverIP, port);
 
-            if(publicIP != null && !publicIP.isEmpty()) {
-                log.info("Client is going to start with IP {} and port {}.", publicIP, port);
-
-                BookShopClient client = new BookShopClient(publicIP, port);
-                client.start();
-            }
+            BookShopClient client = new BookShopClient(serverIP, port);
+            client.start();
 
         } catch (IOException e) {
             log.error("Can't start client! {}!", e.getMessage());

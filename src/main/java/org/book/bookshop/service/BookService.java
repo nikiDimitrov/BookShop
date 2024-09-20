@@ -1,6 +1,7 @@
 package org.book.bookshop.service;
 
 import org.book.bookshop.helpers.BookShopValidator;
+import org.book.bookshop.helpers.Result;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
 import org.book.bookshop.model.Order;
@@ -9,7 +10,6 @@ import org.book.bookshop.repository.*;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 
@@ -29,66 +29,104 @@ public class BookService {
         this.orderItemRepository = new OrderItemRepository();
     }
 
-    public List<Book> findAllBooks() throws SQLException {
-        List<Book> books = bookRepository.findAll();
+    public Result<List<Book>> findAllBooks() {
+        try {
+            List<Book> books = bookRepository.findAll();
+            if (books.isEmpty()) {
+                return Result.failure("No books found!");
+            }
 
-        if(books.isEmpty()) {
-            throw new NoSuchElementException("No books found!");
+            return Result.success(books);
+        } catch (SQLException e) {
+            return Result.failure(String.format("Database error while fetching books. %s!", e.getMessage()));
+        }
+    }
+
+    public Result<Book> findById(UUID id) {
+        try {
+            return bookRepository.findById(id)
+                    .map(Result::success)
+                    .orElse(Result.failure("Book not found!"));
+        } catch(SQLException e) {
+            return Result.failure(String.format("Database error while fetching book. %s!", e.getMessage()));
         }
 
-        return books;
     }
 
-    public Book findById(UUID id) throws SQLException {
-        return bookRepository.findById(id).stream().findFirst().orElse(null);
-    }
-
-    public Book saveBook(String name, String author, double price, List<Category> categories, int year, int quantity) throws IllegalArgumentException, SQLException {
+    public Result<Book> saveBook(String name, String author, double price, List<Category> categories, int year, int quantity) {
         Book book = BookShopValidator.isBookValid(name, author, price, categories, year, quantity);
 
         if(book == null) {
-            throw new IllegalArgumentException("Book name and author should be more than three characters and price, quantity and year should be positive!");
+            return Result.failure("Invalid book data: name and author should have more than 3 characters; price, quantity, and year should be positive!");
         }
 
-        Book savedBook = bookRepository.save(book);
+        try {
+            Book savedBook = bookRepository.save(book);
 
-        if(savedBook != null) {
-            savedBook.setCategories(categories);
+            if(savedBook != null) {
+                savedBook.setCategories(categories);
 
-            booksCategoriesRepository.joinBookAndCategories(savedBook);
+                booksCategoriesRepository.joinBookAndCategories(savedBook);
+            }
+
+            return Result.success(savedBook);
+        }
+        catch (SQLException e) {
+            return Result.failure(String.format("Database error while saving book! %s!", e.getMessage()));
+        }
+    }
+
+    public synchronized Result<Void> updateBookQuantity(OrderItem orderItem) {
+        try {
+            Book book = orderItem.getBook();
+            int newQuantity = book.getQuantity() - orderItem.getQuantity();
+            book.setQuantity(newQuantity);
+            bookRepository.updateQuantity(book, newQuantity);
+
+            return Result.success(null);
+        }
+        catch (SQLException e) {
+            return Result.failure(String.format("Database error while updating book quantity. %s!", e.getMessage()));
         }
 
-        return savedBook;
     }
 
-    public synchronized void updateBookQuantity(OrderItem orderItem) throws SQLException {
-        Book book = orderItem.getBook();
-        int newQuantity = book.getQuantity() - orderItem.getQuantity();
-        book.setQuantity(newQuantity);
-        bookRepository.updateQuantity(book, newQuantity);
+    public Result<Void> restockBook(Book book, int quantityToAdd) {
+        try {
+            int newQuantity = book.getQuantity() + quantityToAdd;
+
+            bookRepository.updateQuantity(book, newQuantity);
+
+            return Result.success(null);
+        }
+        catch(SQLException e) {
+            return Result.failure(String.format("Database error while restocking book! %s!", e.getMessage()));
+        }
     }
 
-    public void restockBook(Book book, int quantityToAdd) throws SQLException {
-        int newQuantity = book.getQuantity() + quantityToAdd;
+    public synchronized Result<Void> deleteBook(Book book) {
+        try {
+            List<Order> ordersOfBook = orderRepository.findByBookId(book.getId());
 
-        bookRepository.updateQuantity(book, newQuantity);
-    }
+            for (Order order : ordersOfBook) {
+                List<OrderItem> orderItems = orderItemRepository.findByOrderId(order.getId());
+                orderItemRepository.deleteInBatch(orderItems);
+            }
 
-    public synchronized void deleteBook(Book book) throws SQLException {
-        List<Order> ordersOfBook = orderRepository.findByBookId(book.getId());
+            orderRepository.deleteAllInBatch(ordersOfBook);
 
-        for (Order order : ordersOfBook) {
-            List<OrderItem> orderItems = orderItemRepository.findByOrderId(order.getId());
-            orderItemRepository.deleteInBatch(orderItems);
+            booksCategoriesRepository.deleteBookAndCategories(book);
+
+            categoryRepository.deleteBatch(book.getCategories());
+
+            bookRepository.delete(book);
+
+            return Result.success(null);
+        }
+        catch(SQLException e) {
+            return Result.failure(String.format("Database error while deleting book. %s", e.getMessage()));
         }
 
-        orderRepository.deleteAllInBatch(ordersOfBook);
-
-        booksCategoriesRepository.deleteBookAndCategories(book);
-
-        categoryRepository.deleteBatch(book.getCategories());
-
-        bookRepository.delete(book);
     }
 
 

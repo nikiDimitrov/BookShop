@@ -1,5 +1,6 @@
 package org.book.bookshop.service;
 
+import org.book.bookshop.helpers.Result;
 import org.book.bookshop.model.Order;
 import org.book.bookshop.model.OrderItem;
 import org.book.bookshop.repository.OrderItemRepository;
@@ -15,8 +16,19 @@ public class OrderItemService {
         this.orderItemRepository = new OrderItemRepository();
     }
 
-    public List<OrderItem> findByOrder(Order order) throws SQLException {
-        return orderItemRepository.findByOrderId(order.getId());
+    public Result<List<OrderItem>> findByOrder(Order order) {
+        try {
+            List<OrderItem> orderItems = orderItemRepository.findByOrderId(order.getId());
+
+            if(orderItems.isEmpty()) {
+                return Result.failure("No order items found for this order id!");
+            }
+
+            return Result.success(orderItems);
+        }
+        catch(SQLException e) {
+            return Result.failure(String.format("Database error while finding order items. %s!", e.getMessage()));
+        }
     }
 
 }

@@ -52,6 +52,10 @@ public class ClientController extends UserController {
         try {
             List<Book> books = getAllBooks();
 
+            if(books == null) {
+                return;
+            }
+
             String[] arguments = view.placeOrder(books);
 
             int[] bookIndexes = parseIndexes(arguments[0]);
