@@ -6,19 +6,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 public class BookShopServer {
+  private static final Logger log = LoggerFactory.getLogger(BookShopServer.class);
+
     private final List<ClientHandler> connectedClients = new ArrayList<>();
-    private static final Logger log = LoggerFactory.getLogger(BookShopServer.class);
     private final ServerSocket serverSocket;
 
-    public BookShopServer(int port) throws IOException {
+    private int port;
+
+    public BookShopServer() throws IOException {
+        getServerProperties();
         serverSocket = new ServerSocket(port, 50, InetAddress.getByName("0.0.0.0"));
+        log.info("Server initialized with port {}!", port);
     }
 
     public void start() {
@@ -39,11 +46,24 @@ public class BookShopServer {
         }
     }
 
+    private void getServerProperties() {
+        try (InputStream input = BookShopServer.class.getClassLoader().getResourceAsStream("server.properties")) {
+            Properties properties = new Properties();
+
+            properties.load(input);
+
+            port = Integer.parseInt(properties.getProperty("server.port"));
+        }
+        catch (NumberFormatException | IOException e) {
+            log.error("Couldn't get server properties! {}", e.getMessage());
+        }
+    }
+
     public static void main(String[] args) {
         try {
             String publicIP = IPGetter.getIp();
 
-            if(publicIP != null && publicIP.isEmpty()) {
+            if(publicIP == null) {
                 System.out.println("Can't get IP address... Exiting...");
             }
             else {
@@ -52,7 +72,7 @@ public class BookShopServer {
                 boolean success = creator.createTableFromScript("tables.sql");
 
                 if(success) {
-                    BookShopServer server = new BookShopServer(3333);
+                    BookShopServer server = new BookShopServer();
                     server.start();
                 }
                 else {

@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Properties;
 import java.util.UUID;
 
 public class BookShopClient {
@@ -26,9 +27,14 @@ public class BookShopClient {
     private final AdminController adminController;
     private final ClientController clientController;
     private final EmployeeController employeeController;
+
+    private String address;
+    private int port;
+
     private User user;
 
-    public BookShopClient(String address, int port) throws IOException {
+    public BookShopClient() throws IOException {
+        getClientProperties();
         socket = new Socket(address, port);
         out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -37,6 +43,8 @@ public class BookShopClient {
         adminController = new AdminController(out, in);
         employeeController = new EmployeeController(out, in);
         clientController = new ClientController(out, in);
+
+        log.info("Client initialized with server address {} and port {}!", address, port);
     }
 
     public void start() {
@@ -126,6 +134,20 @@ public class BookShopClient {
         user.setRole(role);
     }
 
+    private void getClientProperties() {
+        try (InputStream input = BookShopClient.class.getClassLoader().getResourceAsStream("client.properties")) {
+            Properties properties = new Properties();
+
+            properties.load(input);
+
+            address = properties.getProperty("client.address");
+            port = Integer.parseInt(properties.getProperty("client.port"));
+        }
+        catch (IOException | NumberFormatException e) {
+            log.error("Error loading client properties! {}!", e.getMessage());
+        }
+    }
+
 
     private int handleRoleSpecificOptions() {
         return switch (user.getRole()) {
@@ -150,15 +172,13 @@ public class BookShopClient {
 
     public static void main(String[] args) {
         try {
-            String serverIP = "87.119.114.56";
-            int port = 3333;
-            log.info("Client is going to connect to server with IP {} and port {}.", serverIP, port);
-
-            BookShopClient client = new BookShopClient(serverIP, port);
+            BookShopClient client = new BookShopClient();
             client.start();
-
         } catch (IOException e) {
             log.error("Can't start client! {}!", e.getMessage());
         }
     }
+
+
+
 }

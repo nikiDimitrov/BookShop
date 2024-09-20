@@ -45,7 +45,7 @@ public class ClientHandler extends Thread {
             handleClientRequests(in);
 
         } catch (IOException e) {
-            log.error("IO error: {}", e.getMessage(), e);
+            log.error("IO error: {}", e.getMessage());
         } finally {
             removeClient();
             log.info("A client has disconnected.");
