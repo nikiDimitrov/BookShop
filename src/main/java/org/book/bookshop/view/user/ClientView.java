@@ -14,7 +14,9 @@ public class ClientView extends UserView {
 
     public String clientOptions() {
         ClientOptionsShower.showOptions();
-        return scanner.nextLine();
+        String response = scanner.nextLine().trim();
+        System.out.println();
+        return response;
     }
 
     public String[] placeOrder(List<Book> books) {
@@ -32,7 +34,7 @@ public class ClientView extends UserView {
 
     public String confirmOrder(List<OrderItem> orderItems) {
         showAllOrderItems(orderItems);
-        System.out.println("Are you sure you want to order these books? Y\\N\n");
+        System.out.println("\nAre you sure you want to order these books? Y\\N\n");
 
         return scanner.nextLine().trim();
     }
@@ -66,14 +68,6 @@ public class ClientView extends UserView {
 
     public void displayOrderSuccessful() {
         System.out.println("Order was successfully placed!");
-    }
-
-    public void startingDisplayActiveOrders() {
-        System.out.println("Active orders:\n");
-    }
-
-    public void startingDisplayDiscardedOrders() {
-        System.out.println("Discarded orders:\n");
     }
 
     public void unitsTooHighError(Book book) {

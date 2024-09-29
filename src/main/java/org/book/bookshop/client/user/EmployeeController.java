@@ -64,7 +64,7 @@ public class EmployeeController extends UserController {
                 fetchOrdersAndCheck(response);
             }
             else {
-                view.displayError(response.get("failure").asText());
+                view.displayError(response.get("message").asText());
             }
 
         } catch (IOException e) {
@@ -72,7 +72,6 @@ public class EmployeeController extends UserController {
             log.error("Can't send approval of order to server: {}", e.getMessage());
         }
     }
-
 
     public void restockBooks() {
         try {

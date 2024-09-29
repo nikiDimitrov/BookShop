@@ -58,7 +58,7 @@ public class OrderService {
         try {
             List<Order> orders = orderRepository.findByStatus(status);
             if (orders.isEmpty()) {
-                return Result.failure("No orders found for this status!");
+                return Result.failure(String.format("No orders found for status %s!", status.getName()));
             }
             return Result.success(orders);
         } catch (SQLException e) {

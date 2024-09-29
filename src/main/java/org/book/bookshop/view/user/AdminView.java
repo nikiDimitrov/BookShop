@@ -19,7 +19,9 @@ public class AdminView extends UserView {
 
     public String adminOptions() {
         AdminOptionsShower.showOptions();
-        return scanner.nextLine().trim();
+        String response = scanner.nextLine().trim();
+        System.out.println();
+        return response;
     }
 
     public void showAllUsers(List<User> users){
@@ -28,7 +30,6 @@ public class AdminView extends UserView {
         AtomicInteger index = new AtomicInteger(1);
         users.forEach(user -> System.out.printf("%d. %s %s %s\n", index.getAndIncrement(), user.getUsername(),
                 user.getEmail(), user.getRole()));
-        System.out.println();
     }
 
     public JsonNode addBook() {
@@ -84,7 +85,6 @@ public class AdminView extends UserView {
                 System.out.printf("Status is: %s\n\n", order.getStatus().getName());
             });
         }
-
     }
 
     public void displayAddingBookSuccess() {

@@ -144,7 +144,7 @@ public class ClientHandler extends Thread {
             User user = getUserDetails(result);
             System.out.printf("A new user has registered! Welcome %s %s!\n", user.getRole(), user.getUsername());
 
-            this.user = user;
+            sendUserSuccessResponse(user);
         }
         else {
             checkIfConnectionErrorAndLog(result);
@@ -160,17 +160,24 @@ public class ClientHandler extends Thread {
 
         if(result.isSuccess()) {
             User user = getUserDetails(result);
+
+            boolean alreadyLogged = false;
             synchronized (connectedClients) {
                 for(ClientHandler client : connectedClients) {
-                    if(client.user != null &&
+                    if (client.user != null &&
                             client.user.getUsername().equals(user.getUsername())) {
-                        throw new IllegalStateException("User is already logged in!");
+                        alreadyLogged = true;
+                        break;
                     }
                 }
             }
 
-            System.out.printf("User %s %s has logged in!\n", user.getRole(), user.getUsername());
-            this.user = user;
+            if(!alreadyLogged) {
+                sendUserSuccessResponse(user);
+            }
+            else {
+                sendErrorMessageToClient(String.format("User %s has already logged in!", user.getUsername()));
+            }
         }
         else {
             checkIfConnectionErrorAndLog(result);
@@ -565,8 +572,8 @@ public class ClientHandler extends Thread {
             return Result.failure(statusResult.getError());
         }
 
-        Status approvedStatus = statusResult.getValue();
-        Result<Void> changeStatusResult = orderService.changeOrderStatus(order, approvedStatus);
+        Status status = statusResult.getValue();
+        Result<Void> changeStatusResult = orderService.changeOrderStatus(order, status);
 
         if(changeStatusResult.isFailure()) {
             return Result.failure(changeStatusResult.getError());
@@ -580,11 +587,14 @@ public class ClientHandler extends Thread {
 
         List<OrderItem> orderItems = orderItemsResult.getValue();
 
-        for (OrderItem orderItem : orderItems) {
-            Result<Void> updateQuantityResult = bookService.updateBookQuantity(orderItem);
-            if(updateQuantityResult.isFailure()) {
-                return Result.failure(updateQuantityResult.getError());
+        if(status.getName().equals("approved")) {
+            for (OrderItem orderItem : orderItems) {
+                Result<Void> updateQuantityResult = bookService.updateBookQuantity(orderItem);
+                if(updateQuantityResult.isFailure()) {
+                    return Result.failure(updateQuantityResult.getError());
+                }
             }
+
         }
 
         return Result.success(null);
@@ -606,7 +616,7 @@ public class ClientHandler extends Thread {
             }
         });
 
-        return failure.get() ? Result.success(booksWithQuantities) : Result.failure("Couldn't get all books");
+        return failure.get() ? Result.failure("Couldn't get all books!") : Result.success(booksWithQuantities);
     }
 
     private List<OrderItem> createOrderItems(Order order, Map<Book, Integer> booksWithQuantities) {
@@ -671,8 +681,12 @@ public class ClientHandler extends Thread {
         return Result.success(categories);
     }
 
-    private User getUserDetails(Result<User> result) throws IOException {
-        User user = result.getValue();
+    private User getUserDetails(Result<User> result) {
+       return result.getValue();
+    }
+
+
+    private void sendUserSuccessResponse(User user) throws IOException {
         JsonNode response = objectMapper.createObjectNode()
                 .put("status", "success")
                 .put("id", String.valueOf(user.getId()))
@@ -683,7 +697,7 @@ public class ClientHandler extends Thread {
 
         out.write(response.toString() + "\n");
 
-        return user;
+        this.user = user;
     }
 
     private Result<Order> createAndSaveOrder(User user) {

@@ -3,7 +3,6 @@ package org.book.bookshop.view.user;
 import org.book.bookshop.model.Book;
 import org.book.bookshop.model.Category;
 import org.book.bookshop.model.OrderItem;
-import org.book.bookshop.model.User;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -14,17 +13,6 @@ public class UserView {
 
     public UserView() {
         this.scanner = new Scanner(System.in);
-    }
-
-    public void intro(User user) {
-        System.out.printf("Welcome, %s %s!\n", user.getRole(), user.getUsername());
-        System.out.println("\nWhat do you want to do?");
-    }
-
-    public void awaitEnter(){
-        System.out.println("Press ENTER to continue...");
-
-        scanner.nextLine();
     }
 
     public void showAllBooks(List<Book> books, boolean showCategories) {
@@ -77,11 +65,6 @@ public class UserView {
     public void displayNegativeQuantityError() {
         System.out.println("One of the quantities is below zero! It's not allowed!");
     }
-
-    public void displayExitMessage(User user) {
-        System.out.printf("Goodbye, %s! Exiting...\n", user.getUsername());
-    }
-
 
     private String displayCategories(List<Category> categories) {
         return String.join(", ", categories

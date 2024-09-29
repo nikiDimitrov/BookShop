@@ -224,7 +224,6 @@ public class ClientController extends UserController {
 
         String discardedOrdersJson = response.get("discarded_orders").asText();
         if (!discardedOrdersJson.equals("No discarded orders found!")) {
-            getOrders(response, discardedOrdersWithItems, discardedOrdersJson);
             List<Order> discardedOrders = getOrders(response, discardedOrdersWithItems, discardedOrdersJson);
 
             view.viewDiscardedOrders(discardedOrdersWithItems);
